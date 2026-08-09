@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, ArrowLeft } from 'lucide-react';
+import React, { useState } from "react";
+import { Mail, ArrowLeft } from "lucide-react";
 
 interface ForgotPasswordScreenProps {
   onNavigateToLogin: () => void;
@@ -10,7 +10,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
   onNavigateToLogin,
   onSendResetLink,
 }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -37,14 +37,16 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
             Forgot Password
           </h1>
           <p className="text-xs text-gray-400 mt-1 max-w-[240px]">
-            Forgot your password? Enter your email address and we'll send you a password reset link.
+            Forgot your password? Enter your email address and we'll send you a
+            password reset link.
           </p>
         </div>
 
         {submitted ? (
           <div className="space-y-4">
             <div className="p-3 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-xs text-emerald-400">
-              Reset link sent! Please check your inbox at <span className="font-semibold text-white">{email}</span>.
+              Reset link sent! Please check your inbox at{" "}
+              <span className="font-semibold text-white">{email}</span>.
             </div>
             <button
               type="button"
@@ -57,7 +59,9 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Email address</label>
+              <label className="block text-xs text-gray-400 mb-1">
+                Email address
+              </label>
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -73,7 +77,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
               disabled={loading}
               className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-emerald-950 font-semibold rounded-lg text-xs transition-colors cursor-pointer"
             >
-              {loading ? 'Sending Link...' : 'Send Reset Link'}
+              {loading ? "Sending Link..." : "Send Reset Link"}
             </button>
           </form>
         )}
