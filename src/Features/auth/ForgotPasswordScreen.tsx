@@ -26,7 +26,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#090d0b] flex items-center justify-center p-4 text-white">
+    <div className="bg-dot-grid min-h-screen text-white flex items-center justify-center p-6">
       <div className="w-full max-w-sm bg-[#121915] border border-emerald-900/30 rounded-2xl p-6 shadow-2xl text-center">
         {/* Header Icon & Title */}
         <div className="flex flex-col items-center mb-6">
