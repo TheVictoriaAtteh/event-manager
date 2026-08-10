@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LandingPage } from './Features/landing/LandingPage';
 import { SignUpScreen } from './Features/auth/SignUpScreen';
 import { LoginScreen } from './Features/auth/LoginScreen';
 import { ForgotPasswordScreen } from './Features/auth/ForgotPasswordScreen';
@@ -7,6 +8,7 @@ import { EventDetailsScreen } from './Features/events/EventDetailsScreen';
 import { CreateEventScreen } from './Features/events/CreateEventScreen';
 
 type Screen = 
+  | 'landing'
   | 'signup' 
   | 'login' 
   | 'forgot-password' 
@@ -15,10 +17,18 @@ type Screen =
   | 'create-event';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('login');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
 
   return (
     <main>
+      {currentScreen === 'landing' && (
+        <LandingPage
+          onSignIn={() => setCurrentScreen('login')}
+          onCreateEvent={() => setCurrentScreen('signup')}
+          onDoorStaff={() => setCurrentScreen('login')}
+        />
+      )}
+
       {currentScreen === 'login' && (
         <LoginScreen
           onNavigateToSignUp={() => setCurrentScreen('signup')}
@@ -42,7 +52,7 @@ export default function App() {
 
       {currentScreen === 'dashboard' && (
         <EventsDashboard
-          onLogout={() => setCurrentScreen('login')}
+          onLogout={() => setCurrentScreen('landing')}
           onCreateEvent={() => setCurrentScreen('create-event')}
           onSelectEvent={(id: string) => {
             console.log('Selected event:', id);
