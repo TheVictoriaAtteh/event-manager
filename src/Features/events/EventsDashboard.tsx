@@ -67,12 +67,14 @@ interface EventsDashboardProps {
   onLogout: () => void;
   onCreateEvent?: () => void;
   onSelectEvent?: (eventId: string) => void;
+  onNavigateToAttendees?: () => void;
 }
 
 export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   onLogout,
   onCreateEvent,
   onSelectEvent,
+  onNavigateToAttendees,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -99,15 +101,19 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
           </div>
 
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs font-medium">
-              <Calendar className="w-4 h-4" />
-              Events Dashboard
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-emerald-950/30 rounded-lg text-xs font-medium transition-colors">
-              <Users className="w-4 h-4" />
-              Attendees List
-            </button>
-          </nav>
+  <button className="w-full flex items-center gap-3 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs font-medium cursor-pointer">
+    <Calendar className="w-4 h-4" />
+    Events Dashboard
+  </button>
+
+  <button
+    onClick={onNavigateToAttendees}
+    className="w-full flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-emerald-950/30 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+  >
+    <Users className="w-4 h-4" />
+    Attendees List
+  </button>
+</nav>
         </div>
 
         <div className="p-4 border-t border-emerald-900/30">

@@ -6,6 +6,7 @@ import { ForgotPasswordScreen } from './Features/auth/ForgotPasswordScreen';
 import { EventsDashboard } from './Features/events/EventsDashboard';
 import { EventDetailsScreen } from './Features/events/EventDetailsScreen';
 import { CreateEventScreen } from './Features/events/CreateEventScreen';
+import { AttendeesListScreen } from './Features/events/AttendeesListScreen';
 
 type Screen = 
   | 'landing'
@@ -14,7 +15,8 @@ type Screen =
   | 'forgot-password' 
   | 'dashboard' 
   | 'event-details' 
-  | 'create-event';
+  | 'create-event'
+  | 'attendees';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
@@ -58,6 +60,7 @@ export default function App() {
             console.log('Selected event:', id);
             setCurrentScreen('event-details');
           }}
+          onNavigateToAttendees={() => setCurrentScreen('attendees')}
         />
       )}
 
@@ -71,6 +74,12 @@ export default function App() {
         <CreateEventScreen
           onBack={() => setCurrentScreen('dashboard')}
           onSubmitSuccess={() => setCurrentScreen('dashboard')}
+        />
+      )}
+
+      {currentScreen === 'attendees' && (
+        <AttendeesListScreen
+          onBack={() => setCurrentScreen('dashboard')}
         />
       )}
     </main>
