@@ -1,87 +1,143 @@
-import { useState } from 'react';
-import { LandingPage } from './Features/landing/LandingPage';
-import { SignUpScreen } from './Features/auth/SignUpScreen';
-import { LoginScreen } from './Features/auth/LoginScreen';
-import { ForgotPasswordScreen } from './Features/auth/ForgotPasswordScreen';
-import { EventsDashboard } from './Features/events/EventsDashboard';
-import { EventDetailsScreen } from './Features/events/EventDetailsScreen';
-import { CreateEventScreen } from './Features/events/CreateEventScreen';
-import { AttendeesListScreen } from './Features/events/AttendeesListScreen';
+import { useState } from "react";
 
-type Screen = 
-  | 'landing'
-  | 'signup' 
-  | 'login' 
-  | 'forgot-password' 
-  | 'dashboard' 
-  | 'event-details' 
-  | 'create-event'
-  | 'attendees';
+import { LandingPage } from "./Features/landing/LandingPage";
+import { SignUpScreen } from "./Features/auth/SignUpScreen";
+import { LoginScreen } from "./Features/auth/LoginScreen";
+import { ForgotPasswordScreen } from "./Features/auth/ForgotPasswordScreen";
+
+import { EventsDashboard } from "./Features/events/EventsDashboard";
+import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
+import { CreateEventScreen } from "./Features/events/CreateEventScreen";
+import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
+
+type Screen =
+  | "landing"
+  | "signup"
+  | "login"
+  | "forgot-password"
+  | "dashboard"
+  | "event-details"
+  | "create-event"
+  | "attendees"
+  | "add-attendee"
+  | "upload-attendees"
+  | "pass-preview"
+  | "rooms"
+  | "add-room"
+  | "teams"
+  | "room-assignment"
+  | "check-in"
+  | "manual-check-in"
+  | "check-in-log"
+  | "settings"
+  | "help";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
+  const [currentScreen, setCurrentScreen] =
+    useState<Screen>("landing");
 
   return (
-    <main>
-      {currentScreen === 'landing' && (
+    <>
+      {/* LANDING */}
+      {currentScreen === "landing" && (
         <LandingPage
-          onSignIn={() => setCurrentScreen('login')}
-          onCreateEvent={() => setCurrentScreen('signup')}
-          onDoorStaff={() => setCurrentScreen('login')}
+          onSignIn={() => setCurrentScreen("login")}
+          onCreateEvent={() => setCurrentScreen("signup")}
+          onDoorStaff={() => setCurrentScreen("login")}
         />
       )}
 
-      {currentScreen === 'login' && (
+      {/* LOGIN */}
+      {currentScreen === "login" && (
         <LoginScreen
-          onNavigateToSignUp={() => setCurrentScreen('signup')}
-          onNavigateToForgotPassword={() => setCurrentScreen('forgot-password')}
-          onLoginSuccess={() => setCurrentScreen('dashboard')}
+          onNavigateToSignUp={() =>
+            setCurrentScreen("signup")
+          }
+          onNavigateToForgotPassword={() =>
+            setCurrentScreen("forgot-password")
+          }
+          onLoginSuccess={() =>
+            setCurrentScreen("dashboard")
+          }
         />
       )}
 
-      {currentScreen === 'signup' && (
+      {/* SIGN UP */}
+      {currentScreen === "signup" && (
         <SignUpScreen
-          onNavigateToLogin={() => setCurrentScreen('login')}
-          onSignUpSuccess={() => setCurrentScreen('dashboard')}
+          onNavigateToLogin={() =>
+            setCurrentScreen("login")
+          }
+          onSignUpSuccess={() =>
+            setCurrentScreen("dashboard")
+          }
         />
       )}
 
-      {currentScreen === 'forgot-password' && (
+      {/* FORGOT PASSWORD */}
+      {currentScreen === "forgot-password" && (
         <ForgotPasswordScreen
-          onNavigateToLogin={() => setCurrentScreen('login')}
+          onNavigateToLogin={() =>
+            setCurrentScreen("login")
+          }
         />
       )}
 
-      {currentScreen === 'dashboard' && (
+      {/* DASHBOARD */}
+      {currentScreen === "dashboard" && (
         <EventsDashboard
-          onLogout={() => setCurrentScreen('landing')}
-          onCreateEvent={() => setCurrentScreen('create-event')}
+          onLogout={() =>
+            setCurrentScreen("landing")
+          }
+
+          onCreateEvent={() =>
+            setCurrentScreen("create-event")
+          }
+
           onSelectEvent={(id: string) => {
-            console.log('Selected event:', id);
-            setCurrentScreen('event-details');
+            console.log("Selected event:", id);
+            setCurrentScreen("event-details");
           }}
-          onNavigateToAttendees={() => setCurrentScreen('attendees')}
+
+          onNavigateToAttendees={() =>
+            setCurrentScreen("attendees")
+          }
+
+          onNavigate={(screen: string) => {
+            setCurrentScreen(screen as Screen);
+          }}
         />
       )}
 
-      {currentScreen === 'event-details' && (
+      {/* EVENT DETAILS */}
+      {currentScreen === "event-details" && (
         <EventDetailsScreen
-          onBack={() => setCurrentScreen('dashboard')}
+          onBack={() =>
+            setCurrentScreen("dashboard")
+          }
         />
       )}
 
-      {currentScreen === 'create-event' && (
+      {/* CREATE EVENT */}
+      {currentScreen === "create-event" && (
         <CreateEventScreen
-          onBack={() => setCurrentScreen('dashboard')}
-          onSubmitSuccess={() => setCurrentScreen('dashboard')}
+          onBack={() =>
+            setCurrentScreen("dashboard")
+          }
+          onSubmitSuccess={() =>
+            setCurrentScreen("dashboard")
+          }
         />
       )}
 
-      {currentScreen === 'attendees' && (
+      {/* ATTENDEES */}
+      {currentScreen === "attendees" && (
         <AttendeesListScreen
-          onBack={() => setCurrentScreen('dashboard')}
+          onBack={() =>
+            setCurrentScreen("dashboard")
+          }
         />
       )}
-    </main>
+    </>
   );
 }
