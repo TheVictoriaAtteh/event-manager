@@ -1,65 +1,142 @@
-import React, { useState } from "react";
-
-
-import Sidebar from "../../components/Sidebar";
+import React from "react";
+import { ArrowLeft, LogOut } from "lucide-react";
 
 import SettingsProfile from "./SettingsProfile";
 import SettingsSecurity from "./SettingsSecurity";
 import SettingsNotifications from "./SettingsNotifications";
 import SettingsAppearance from "./SettingsAppearance";
+
 interface SettingsScreenProps {
-  onNavigate?: (screen: string) => void;
+  onBack?: () => void;
   onLogout?: () => void;
 }
 
 export default function SettingsScreen({
-  onNavigate,
+  onBack,
   onLogout,
 }: SettingsScreenProps) {
-  const [collapsed, setCollapsed] = useState(false);
-
   return (
-    <div className="flex min-h-screen bg-[#090d0b] text-white">
+    <div className="min-h-screen bg-[#090d0b] text-white relative overflow-hidden">
 
-      {/* SIDEBAR */}
-      <Sidebar
-        collapsed={collapsed}
-        onToggle={() => setCollapsed(!collapsed)}
-        activeScreen="settings"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
+      {/* POLKA DOT BACKGROUND */}
+      <div
+        className="
+          fixed
+          inset-0
+          pointer-events-none
+          opacity-50
+        "
+        style={{
+          backgroundImage:
+  "radial-gradient(circle, rgba(16, 185, 129, 0.45) 1.2px, transparent 1.2px)",
+          backgroundSize: "28px 28px",
+        }}
       />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
+      <div className="relative z-10 min-h-screen">
 
-        {/* HEADER */}
-        <header className="h-16 border-b border-emerald-900/30 bg-[#0d1310] px-6 flex items-center">
-          <div>
-            <h1 className="text-sm font-semibold text-white">
+        <main className="max-w-5xl mx-auto px-6 py-8">
+
+          {/* TOP BAR */}
+          <div className="flex items-center justify-between mb-8">
+
+            {/* BACK TO DASHBOARD */}
+            <button
+              onClick={onBack}
+              className="
+                flex
+                items-center
+                gap-2
+                text-sm
+                text-gray-400
+                hover:text-white
+                transition
+              "
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </button>
+
+            {/* LOGOUT */}
+            <button
+              onClick={onLogout}
+              className="
+                flex
+                items-center
+                gap-2
+                px-4
+                py-2
+                rounded-lg
+                bg-emerald-600
+                hover:bg-emerald-500
+                text-emerald-950
+                text-sm
+                font-semibold
+                transition-colors
+                shadow-lg
+                shadow-emerald-900/20
+              "
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+
+          </div>
+
+          {/* SETTINGS HEADER */}
+          <div className="mb-8">
+
+            <h1 className="text-2xl font-bold text-emerald-50">
               Settings
             </h1>
 
-            <p className="text-xs text-gray-500 mt-1">
-              Manage your account and application preferences
+            <p className="text-sm text-gray-400 mt-1">
+              Manage your account and application preferences.
             </p>
+
           </div>
-        </header>
 
-        {/* SETTINGS */}
-        <div className="p-6 max-w-5xl space-y-6">
+          {/* SETTINGS CARD */}
+          <div
+            className="
+              bg-[#121915]
+              border
+              border-emerald-900/30
+              rounded-xl
+              overflow-hidden
+            "
+          >
 
-          <SettingsProfile />
+            {/* PROFILE */}
+            <SettingsProfile />
 
-          <SettingsSecurity />
+            {/* DIVIDER */}
+            <div className="border-t border-emerald-900/30" />
 
-          <SettingsNotifications />
+            {/* SECURITY */}
+            <SettingsSecurity />
 
-          <SettingsAppearance />
+            {/* DIVIDER */}
+            <div className="border-t border-emerald-900/30" />
 
-        </div>
+            {/* NOTIFICATIONS */}
+            <SettingsNotifications />
 
-      </main>
+            {/* DIVIDER */}
+            <div className="border-t border-emerald-900/30" />
+
+            {/* APPEARANCE */}
+            <SettingsAppearance />
+
+          </div>
+
+          {/* BOTTOM SPACE */}
+          <div className="h-10" />
+
+        </main>
+
+      </div>
     </div>
   );
 }

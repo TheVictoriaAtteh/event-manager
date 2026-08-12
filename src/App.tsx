@@ -151,21 +151,19 @@ export default function App() {
     onNavigate={(screen) => {
       setCurrentScreen(screen as Screen);
     }}
-    onLogout={() => {
-      setCurrentScreen("landing");
-    }}
+    // onLogout={() => {
+    //   setCurrentScreen("landing");
+    // }}
     onAddRoom={() => {
       setCurrentScreen("add-room");
     }}
   />
 )}
       {/* SETTINGS */}
+
 {currentScreen === "settings" && (
   <SettingsScreen
-    onNavigate={(screen) => {
-      setCurrentScreen(screen as Screen);
-    }}
-    onLogout={() => setCurrentScreen("landing")}
+    onBack={() => setCurrentScreen("dashboard")}
   />
 )}
     </>
