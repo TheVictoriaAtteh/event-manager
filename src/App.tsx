@@ -4,7 +4,7 @@ import { LandingPage } from "./Features/landing/LandingPage";
 import { SignUpScreen } from "./Features/auth/SignUpScreen";
 import { LoginScreen } from "./Features/auth/LoginScreen";
 import { ForgotPasswordScreen } from "./Features/auth/ForgotPasswordScreen";
-import SettingsScreen  from "./Features/auth/SettingsScreen";
+import SettingsScreen  from "./Features/settings/SettingsScreen";
 
 import { EventsDashboard } from "./Features/events/EventsDashboard";
 import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
@@ -31,6 +31,10 @@ type Screen =
   | "manual-check-in"
   | "check-in-log"
   | "settings"
+| "settings-profile"
+| "settings-security"
+| "settings-notifications"
+| "settings-appearance"
   | "help";
 
 export default function App() {
