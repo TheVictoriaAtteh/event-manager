@@ -11,6 +11,8 @@ import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
 import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 
+import { RoomsScreen } from "./Features/rooms/RoomsScreen";
+
 type Screen =
   | "landing"
   | "signup"
@@ -143,6 +145,20 @@ export default function App() {
           }
         />
       )}
+    {/* ROOMS */}
+      {currentScreen === "rooms" && (
+  <RoomsScreen
+    onNavigate={(screen) => {
+      setCurrentScreen(screen as Screen);
+    }}
+    onLogout={() => {
+      setCurrentScreen("landing");
+    }}
+    onAddRoom={() => {
+      setCurrentScreen("add-room");
+    }}
+  />
+)}
       {/* SETTINGS */}
 {currentScreen === "settings" && (
   <SettingsScreen
