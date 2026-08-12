@@ -4,6 +4,7 @@ import { LandingPage } from "./Features/landing/LandingPage";
 import { SignUpScreen } from "./Features/auth/SignUpScreen";
 import { LoginScreen } from "./Features/auth/LoginScreen";
 import { ForgotPasswordScreen } from "./Features/auth/ForgotPasswordScreen";
+import SettingsScreen  from "./Features/auth/SettingsScreen";
 
 import { EventsDashboard } from "./Features/events/EventsDashboard";
 import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
@@ -138,6 +139,15 @@ export default function App() {
           }
         />
       )}
+      {/* SETTINGS */}
+{currentScreen === "settings" && (
+  <SettingsScreen
+    onNavigate={(screen) => {
+      setCurrentScreen(screen as Screen);
+    }}
+    onLogout={() => setCurrentScreen("landing")}
+  />
+)}
     </>
   );
 }
