@@ -67,6 +67,7 @@ const BoothsScreen: React.FC<BoothsScreenProps> = ({ onBack }) => {
   );
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[#090d0b] text-white relative overflow-hidden">
       
       {/* ==================== POLKA DOT BACKGROUND ==================== */}
@@ -82,6 +83,23 @@ const BoothsScreen: React.FC<BoothsScreenProps> = ({ onBack }) => {
     backgroundSize: "24px 24px",
   }}
 />
+=======
+    <div className="bg-dot-grid min-h-screen text-white">
+      {/* POLKA DOT BACKGROUND */}
+      {/* <div
+        className="
+          absolute
+          inset-0
+          pointer-events-none
+          opacity-30
+        "
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(16,185,129,0.22) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      /> */}
+>>>>>>> 1321ab8de82c20b12fb53a1416029e41bb1cc821
 
       {/* ==================== CONTENT ==================== */}
       <div className="relative z-10 min-h-screen p-6">
