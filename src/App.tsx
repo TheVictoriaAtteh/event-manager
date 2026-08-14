@@ -12,7 +12,7 @@ import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
-// import { BoothsScreen } from "./Features/booths/BoothsScreen";
+import BoothsScreen from "./Features/booths/BoothsScreen";
 
 type Screen =
   | "landing"
@@ -161,12 +161,11 @@ export default function App() {
     }}
   />
 )}
-{/* {currentScreen === "booths" && (
+{currentScreen === "booths" && (
   <BoothsScreen
     onBack={() => setCurrentScreen("dashboard")}
-    onLogout={() => setCurrentScreen("landing")}
   />
-)} */}
+)}
       {/* SETTINGS */}
 
 {currentScreen === "settings" && (
