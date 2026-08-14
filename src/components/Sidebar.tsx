@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: Building2,
     },
     {
-      id: "teams",
+      id: "booths",
       label: "Teams / Booths",
       icon: Tent,
     },

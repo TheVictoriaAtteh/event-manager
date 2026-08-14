@@ -12,6 +12,7 @@ import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
+import { BoothsScreen } from "./Features/booths/BoothsScreen";
 
 type Screen =
   | "landing"
@@ -27,7 +28,8 @@ type Screen =
   | "pass-preview"
   | "rooms"
   | "add-room"
-  | "teams"
+  // | "teams"
+  | "booths"
   | "room-assignment"
   | "check-in"
   | "manual-check-in"
@@ -157,6 +159,12 @@ export default function App() {
     onAddRoom={() => {
       setCurrentScreen("add-room");
     }}
+  />
+)}
+{currentScreen === "booths" && (
+  <BoothsScreen
+    onBack={() => setCurrentScreen("dashboard")}
+    onLogout={() => setCurrentScreen("landing")}
   />
 )}
       {/* SETTINGS */}
