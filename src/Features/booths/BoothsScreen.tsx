@@ -105,9 +105,9 @@ export const BoothsScreen: React.FC<BoothsScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#090d0b] text-white relative overflow-hidden">
+    <div className="bg-dot-grid min-h-screen text-white">
       {/* POLKA DOT BACKGROUND */}
-      <div
+      {/* <div
         className="
           absolute
           inset-0
@@ -119,7 +119,7 @@ export const BoothsScreen: React.FC<BoothsScreenProps> = ({
             "radial-gradient(circle, rgba(16,185,129,0.22) 1px, transparent 1px)",
           backgroundSize: "28px 28px",
         }}
-      />
+      /> */}
 
       {/* CONTENT */}
       <div className="relative z-10 min-h-screen flex flex-col">
