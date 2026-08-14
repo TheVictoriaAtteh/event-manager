@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 
 import SettingsProfile from "./SettingsProfile";
