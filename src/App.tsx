@@ -12,7 +12,12 @@ import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
+<<<<<<< HEAD
 import BoothsScreen from "./Features/booths/BoothsScreen";
+=======
+
+export type UserRole = "ADMIN" | "ATTENDEE";
+>>>>>>> 1291829 (attendee and admin login added)
 
 type Screen =
   | "landing"
@@ -28,22 +33,21 @@ type Screen =
   | "pass-preview"
   | "rooms"
   | "add-room"
-  // | "teams"
   | "booths"
   | "room-assignment"
   | "check-in"
   | "manual-check-in"
   | "check-in-log"
   | "settings"
-| "settings-profile"
-| "settings-security"
-| "settings-notifications"
-| "settings-appearance"
+  | "settings-profile"
+  | "settings-security"
+  | "settings-notifications"
+  | "settings-appearance"
   | "help";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] =
-    useState<Screen>("landing");
+  const [currentScreen, setCurrentScreen] = useState<Screen>("landing");
+  const [userRole, setUserRole] = useState<UserRole>("ATTENDEE");
 
   return (
     <>
@@ -65,9 +69,10 @@ export default function App() {
           onNavigateToForgotPassword={() =>
             setCurrentScreen("forgot-password")
           }
-          onLoginSuccess={() =>
-            setCurrentScreen("dashboard")
-          }
+          onLoginSuccess={(role: UserRole) => {
+            setUserRole(role);
+            setCurrentScreen("dashboard");
+          }}
         />
       )}
 
@@ -95,9 +100,11 @@ export default function App() {
       {/* DASHBOARD */}
       {currentScreen === "dashboard" && (
         <EventsDashboard
-          onLogout={() =>
-            setCurrentScreen("landing")
-          }
+          userRole={userRole}
+          onLogout={() => {
+            setUserRole("ATTENDEE");
+            setCurrentScreen("landing");
+          }}
 
           onCreateEvent={() =>
             setCurrentScreen("create-event")
@@ -147,6 +154,7 @@ export default function App() {
           }
         />
       )}
+<<<<<<< HEAD
     {/* ROOMS */}
       {currentScreen === "rooms" && (
   <RoomsScreen
@@ -167,12 +175,27 @@ export default function App() {
   />
 )}
       {/* SETTINGS */}
+=======
+>>>>>>> 1291829 (attendee and admin login added)
 
-{currentScreen === "settings" && (
-  <SettingsScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
+      {/* ROOMS */}
+      {currentScreen === "rooms" && (
+        <RoomsScreen
+          onNavigate={(screen) => {
+            setCurrentScreen(screen as Screen);
+          }}
+          onAddRoom={() => {
+            setCurrentScreen("add-room");
+          }}
+        />
+      )}
+
+      {/* SETTINGS */}
+      {currentScreen === "settings" && (
+        <SettingsScreen
+          onBack={() => setCurrentScreen("dashboard")}
+        />
+      )}
     </>
   );
 }

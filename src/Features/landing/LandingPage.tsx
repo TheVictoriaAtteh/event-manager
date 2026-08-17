@@ -26,7 +26,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Top Navigation */}
       <header className="relative z-10 flex items-center justify-between max-w-6xl w-full mx-auto">
         <div className="text-lg font-bold tracking-wide text-emerald-50">
-          Gatepass
+          Event Manager
         </div>
         <button
           onClick={onSignIn}
@@ -59,13 +59,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 onClick={onCreateEvent}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-semibold rounded-lg text-xs transition-colors cursor-pointer shadow-lg shadow-emerald-950/50"
               >
-                Create an event
+                Admin
               </button>
               <button
                 onClick={onDoorStaff}
                 className="px-5 py-2.5 bg-[#141c18] hover:bg-[#1a2520] border border-emerald-900/40 text-xs font-semibold text-gray-300 hover:text-white rounded-lg transition-colors cursor-pointer"
               >
-                I'm door staff
+                Attendee
               </button>
             </div>
           </div>
