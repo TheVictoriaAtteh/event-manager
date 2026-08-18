@@ -4,20 +4,14 @@ import { LandingPage } from "./Features/landing/LandingPage";
 import { SignUpScreen } from "./Features/auth/SignUpScreen";
 import { LoginScreen } from "./Features/auth/LoginScreen";
 import { ForgotPasswordScreen } from "./Features/auth/ForgotPasswordScreen";
-import SettingsScreen  from "./Features/settings/SettingsScreen";
+import type { UserRole } from "./Features/auth/types";
 
+import SettingsScreen from "./Features/settings/SettingsScreen";
 import { EventsDashboard } from "./Features/events/EventsDashboard";
 import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
 import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
-
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
-<<<<<<< HEAD
-import BoothsScreen from "./Features/booths/BoothsScreen";
-=======
-
-export type UserRole = "ADMIN" | "ATTENDEE";
->>>>>>> 1291829 (attendee and admin login added)
 
 type Screen =
   | "landing"
@@ -49,6 +43,11 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("landing");
   const [userRole, setUserRole] = useState<UserRole>("ATTENDEE");
 
+  const handleLogout = () => {
+    setUserRole("ATTENDEE");
+    setCurrentScreen("landing");
+  };
+
   return (
     <>
       {/* LANDING */}
@@ -63,12 +62,8 @@ export default function App() {
       {/* LOGIN */}
       {currentScreen === "login" && (
         <LoginScreen
-          onNavigateToSignUp={() =>
-            setCurrentScreen("signup")
-          }
-          onNavigateToForgotPassword={() =>
-            setCurrentScreen("forgot-password")
-          }
+          onNavigateToSignUp={() => setCurrentScreen("signup")}
+          onNavigateToForgotPassword={() => setCurrentScreen("forgot-password")}
           onLoginSuccess={(role: UserRole) => {
             setUserRole(role);
             setCurrentScreen("dashboard");
@@ -79,21 +74,15 @@ export default function App() {
       {/* SIGN UP */}
       {currentScreen === "signup" && (
         <SignUpScreen
-          onNavigateToLogin={() =>
-            setCurrentScreen("login")
-          }
-          onSignUpSuccess={() =>
-            setCurrentScreen("dashboard")
-          }
+          onNavigateToLogin={() => setCurrentScreen("login")}
+          onSignUpSuccess={() => setCurrentScreen("dashboard")}
         />
       )}
 
       {/* FORGOT PASSWORD */}
       {currentScreen === "forgot-password" && (
         <ForgotPasswordScreen
-          onNavigateToLogin={() =>
-            setCurrentScreen("login")
-          }
+          onNavigateToLogin={() => setCurrentScreen("login")}
         />
       )}
 
@@ -101,24 +90,13 @@ export default function App() {
       {currentScreen === "dashboard" && (
         <EventsDashboard
           userRole={userRole}
-          onLogout={() => {
-            setUserRole("ATTENDEE");
-            setCurrentScreen("landing");
-          }}
-
-          onCreateEvent={() =>
-            setCurrentScreen("create-event")
-          }
-
+          onLogout={handleLogout}
+          onCreateEvent={() => setCurrentScreen("create-event")}
           onSelectEvent={(id: string) => {
             console.log("Selected event:", id);
             setCurrentScreen("event-details");
           }}
-
-          onNavigateToAttendees={() =>
-            setCurrentScreen("attendees")
-          }
-
+          onNavigateToAttendees={() => setCurrentScreen("attendees")}
           onNavigate={(screen: string) => {
             setCurrentScreen(screen as Screen);
           }}
@@ -128,55 +106,24 @@ export default function App() {
       {/* EVENT DETAILS */}
       {currentScreen === "event-details" && (
         <EventDetailsScreen
-          onBack={() =>
-            setCurrentScreen("dashboard")
-          }
+          onBack={() => setCurrentScreen("dashboard")}
         />
       )}
 
       {/* CREATE EVENT */}
       {currentScreen === "create-event" && (
         <CreateEventScreen
-          onBack={() =>
-            setCurrentScreen("dashboard")
-          }
-          onSubmitSuccess={() =>
-            setCurrentScreen("dashboard")
-          }
+          onBack={() => setCurrentScreen("dashboard")}
+          onSubmitSuccess={() => setCurrentScreen("dashboard")}
         />
       )}
 
       {/* ATTENDEES */}
       {currentScreen === "attendees" && (
         <AttendeesListScreen
-          onBack={() =>
-            setCurrentScreen("dashboard")
-          }
+          onBack={() => setCurrentScreen("dashboard")}
         />
       )}
-<<<<<<< HEAD
-    {/* ROOMS */}
-      {currentScreen === "rooms" && (
-  <RoomsScreen
-    onNavigate={(screen) => {
-      setCurrentScreen(screen as Screen);
-    }}
-    // onLogout={() => {
-    //   setCurrentScreen("landing");
-    // }}
-    onAddRoom={() => {
-      setCurrentScreen("add-room");
-    }}
-  />
-)}
-{currentScreen === "booths" && (
-  <BoothsScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
-      {/* SETTINGS */}
-=======
->>>>>>> 1291829 (attendee and admin login added)
 
       {/* ROOMS */}
       {currentScreen === "rooms" && (

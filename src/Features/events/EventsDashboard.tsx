@@ -1,638 +1,354 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import type { UserRole } from '../auth/types';
 
-import {
-  Calendar,
-  Users,
-  Plus,
-  Search,
-  Filter,
-  MapPin,
-  Clock,
-  LayoutGrid,
-  List as ListIcon,
-  Bell,
-  CheckCircle2,
-} from "lucide-react";
-
-import Sidebar from "../../components/Sidebar";
+interface EventsDashboardProps {
+  userRole: UserRole;
+  onLogout: () => void;
+  onCreateEvent: () => void;
+  onSelectEvent: (id: string) => void;
+  onNavigateToAttendees: () => void;
+  onNavigate: (screen: string) => void;
+}
 
 interface EventItem {
   id: string;
   title: string;
   category: string;
   date: string;
-  time: string;
-  location: string;
-  attendeesCount: number;
-  status: "Upcoming" | "Ongoing" | "Completed";
+  isPrivate: boolean;
   image: string;
 }
 
-const MOCK_EVENTS: EventItem[] = [
-  {
-    id: "1",
-    title: "Tech Innovators Summit 2026",
-    category: "Conference",
-    date: "Aug 24, 2026",
-    time: "09:00 AM",
-    location: "Main Auditorium, Tech Hub",
-    attendeesCount: 142,
-    status: "Upcoming",
-    image:
-      "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=600&auto=format&fit=crop&q=60",
-  },
-
-  {
-    id: "2",
-    title: "UI/UX Design Workshop",
-    category: "Workshop",
-    date: "Sep 02, 2026",
-    time: "02:00 PM",
-    location: "Design Studio B",
-    attendeesCount: 45,
-    status: "Upcoming",
-    image:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop&q=60",
-  },
-
-  {
-    id: "3",
-    title: "Annual Developer Meetup",
-    category: "Networking",
-    date: "Sep 15, 2026",
-    time: "05:30 PM",
-    location: "Rooftop Lounge",
-    attendeesCount: 88,
-    status: "Upcoming",
-    image:
-      "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&auto=format&fit=crop&q=60",
-  },
-];
-
-interface EventsDashboardProps {
-  onLogout: () => void;
-  onCreateEvent?: () => void;
-  onSelectEvent?: (eventId: string) => void;
-  onNavigateToAttendees?: () => void;
-  onNavigate?: (screen: string) => void;
-}
-
 export const EventsDashboard: React.FC<EventsDashboardProps> = ({
+  userRole,
   onLogout,
   onCreateEvent,
   onSelectEvent,
   onNavigateToAttendees,
   onNavigate,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] =
-    useState<"grid" | "list">("grid");
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [privateCode, setPrivateCode] = useState('');
+  const [codeSuccessMsg, setCodeSuccessMsg] = useState('');
 
-  const [collapsed, setCollapsed] =
-    useState(false);
+  const mockEvents: EventItem[] = [
+    {
+      id: '1',
+      title: 'Tech Innovation Summit 2026',
+      category: 'Conference',
+      date: 'Aug 24, 2026',
+      isPrivate: false,
+      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=60',
+    },
+    {
+      id: '2',
+      title: 'UI/UX Design Workshop',
+      category: 'Workshop',
+      date: 'Sep 02, 2026',
+      isPrivate: true,
+      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop&q=60',
+    },
+    {
+      id: '3',
+      title: 'Developer Meetup & Networking',
+      category: 'Networking',
+      date: 'Sep 15, 2026',
+      isPrivate: false,
+      image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&auto=format&fit=crop&q=60',
+    },
+  ];
 
-  const filteredEvents = MOCK_EVENTS.filter(
-    (event) =>
-      event.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      event.category
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      event.location
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
-
-  /*
-   * SIDEBAR NAVIGATION
-   *
-   * This is what connects the sidebar
-   * to the actual screens in App.tsx.
-   */
-  const handleNavigate = (screen: string) => {
-    if (screen === "dashboard") {
-      return;
+  const handlePrivateCodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (privateCode.trim()) {
+      setCodeSuccessMsg('Registration request submitted! Awaiting admin approval.');
+      setTimeout(() => {
+        setPrivateCode('');
+        setCodeSuccessMsg('');
+        setShowCodeModal(false);
+      }, 2000);
     }
-
-    if (screen === "attendees") {
-      onNavigateToAttendees?.();
-      return;
-    }
-
-    onNavigate?.(screen);
   };
 
   return (
-    <div className="flex min-h-screen bg-[#090d0b]">
+    <div className="min-h-screen bg-[#0B1914] text-white flex bg-dot-grid relative overflow-hidden">
+      {/* Background Ambient Glow */}
+      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* SIDEBAR */}
-      <Sidebar
-        collapsed={collapsed}
-        onToggle={() =>
-          setCollapsed(!collapsed)
-        }
-        activeScreen="dashboard"
-        onNavigate={handleNavigate}
-        onLogout={onLogout}
-      />
-
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* TOP HEADER */}
-        <header
-          className="
-            h-16
-            border-b
-            border-emerald-900/30
-            bg-[#0d1310]
-            px-6
-            flex
-            items-center
-            justify-between
-            gap-4
-          "
-        >
-
-          {/* Search */}
-          <div className="relative flex-1 max-w-xl">
-
-            <Search
-              className="
-                w-4
-                h-4
-                absolute
-                left-3
-                top-1/2
-                -translate-y-1/2
-                text-gray-500
-              "
-            />
-
-            <input
-              type="text"
-              placeholder="Search events, locations, or categories..."
-              value={searchTerm}
-              onChange={(e) =>
-                setSearchTerm(e.target.value)
-              }
-              className="
-                w-full
-                pl-9
-                pr-4
-                py-2
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                placeholder-gray-500
-                focus:outline-none
-                focus:border-emerald-500
-              "
-            />
-
-          </div>
-
-          {/* Header controls */}
-          <div className="flex items-center gap-4">
-
-            <button
-              className="
-                p-2
-                text-gray-400
-                hover:text-white
-                rounded-lg
-                hover:bg-emerald-950/40
-                relative
-              "
-            >
-
-              <Bell className="w-5 h-5" />
-
-              <span
-                className="
-                  w-2
-                  h-2
-                  rounded-full
-                  bg-emerald-500
-                  absolute
-                  top-1.5
-                  right-1.5
-                "
-              />
-
-            </button>
-
-            <div
-              className="
-                w-10
-                h-10
-                rounded-full
-                bg-emerald-800/40
-                border
-                border-emerald-600/40
-                flex
-                items-center
-                justify-center
-                text-sm
-                font-bold
-                text-emerald-300
-              "
-            >
-              BB
+      {/* ORIGINAL SIDEBAR IMPLEMENTATION */}
+      <aside className="w-64 bg-[#12241D]/90 backdrop-blur-xl border-r border-emerald-800/40 p-6 flex flex-col justify-between hidden md:flex z-10">
+        <div className="space-y-6">
+          {/* Header & Logo */}
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-
-          </div>
-
-        </header>
-
-        {/* DASHBOARD */}
-        <main className="p-6 flex-1 overflow-y-auto space-y-7">
-
-          {/* TITLE + CREATE */}
-          <div
-            className="
-              flex
-              flex-col
-              sm:flex-row
-              sm:items-center
-              justify-between
-              gap-4
-            "
-          >
-
             <div>
-
-              <h1 className="text-2xl font-bold text-emerald-50">
-                Events Overview
-              </h1>
-
-              <p className="text-sm text-gray-400 mt-1">
-                Manage and organize upcoming platforms & gatherings
-              </p>
-
+              <h1 className="font-bold text-lg text-white leading-none">Event Manager</h1>
+              <span className="text-xs text-emerald-400 font-medium capitalize">{userRole} Console</span>
             </div>
+          </div>
 
+          {/* Original Navigation Items with SVGs */}
+          <nav className="space-y-1.5 pt-4">
             <button
-              onClick={onCreateEvent}
-              className="
-                inline-flex
-                items-center
-                justify-center
-                gap-2
-                px-5
-                py-2.5
-                bg-emerald-600
-                hover:bg-emerald-500
-                text-emerald-950
-                font-semibold
-                rounded-lg
-                text-sm
-                transition-colors
-                shadow-lg
-                shadow-emerald-900/20
-              "
+              onClick={() => onNavigate('dashboard')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500 text-[#0B1914] font-bold shadow-md shadow-emerald-500/10 text-sm transition-all"
             >
-
-              <Plus className="w-4 h-4" />
-
-              Create New Event
-
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Events Dashboard
             </button>
 
-          </div>
-
-          {/* METRICS */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-            <div
-              className="
-                p-5
-                bg-[#121915]
-                border
-                border-emerald-900/30
-                rounded-xl
-              "
-            >
-
-              <div className="flex justify-between items-center text-gray-400 mb-3">
-
-                <span className="text-sm font-medium">
-                  Total Events
-                </span>
-
-                <Calendar className="w-5 h-5 text-emerald-400" />
-
-              </div>
-
-              <p className="text-3xl font-bold text-emerald-50">
-                12
-              </p>
-
-            </div>
-
-            <div
-              className="
-                p-5
-                bg-[#121915]
-                border
-                border-emerald-900/30
-                rounded-xl
-              "
-            >
-
-              <div className="flex justify-between items-center text-gray-400 mb-3">
-
-                <span className="text-sm font-medium">
-                  Total Registered
-                </span>
-
-                <Users className="w-5 h-5 text-emerald-400" />
-
-              </div>
-
-              <p className="text-3xl font-bold text-emerald-50">
-                275
-              </p>
-
-            </div>
-
-            <div
-              className="
-                p-5
-                bg-[#121915]
-                border
-                border-emerald-900/30
-                rounded-xl
-              "
-            >
-
-              <div className="flex justify-between items-center text-gray-400 mb-3">
-
-                <span className="text-sm font-medium">
-                  Active Events
-                </span>
-
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-
-              </div>
-
-              <p className="text-3xl font-bold text-emerald-50">
-                3
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* FILTER + VIEW */}
-          <div className="flex items-center justify-between pt-2">
-
             <button
-              className="
-                flex
-                items-center
-                gap-2
-                px-4
-                py-2
-                bg-[#121915]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-gray-300
-                hover:border-emerald-700
-              "
+              onClick={onNavigateToAttendees}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
             >
-
-              <Filter className="w-4 h-4 text-emerald-400" />
-
-              Filter
-
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Attendees List
             </button>
 
-            <div
-              className="
-                flex
-                items-center
-                gap-1
-                bg-[#121915]
-                border
-                border-emerald-900/40
-                p-1
-                rounded-lg
-              "
+            <button
+              onClick={() => onNavigate('rooms')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              Rooms
+            </button>
 
-              <button
-                onClick={() =>
-                  setViewMode("grid")
-                }
-                className={`
-                  p-2 rounded
-                  ${
-                    viewMode === "grid"
-                      ? "bg-emerald-600/20 text-emerald-400"
-                      : "text-gray-400"
-                  }
-                `}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
+            <button
+              onClick={() => onNavigate('teams')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Teams / Booths
+            </button>
 
-              <button
-                onClick={() =>
-                  setViewMode("list")
-                }
-                className={`
-                  p-2 rounded
-                  ${
-                    viewMode === "list"
-                      ? "bg-emerald-600/20 text-emerald-400"
-                      : "text-gray-400"
-                  }
-                `}
-              >
-                <ListIcon className="w-4 h-4" />
-              </button>
+            <button
+              onClick={() => onNavigate('check-in')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              Check-In
+            </button>
 
-            </div>
+            <button
+              onClick={() => onNavigate('check-in-log')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Check-In Log
+            </button>
 
+            <button
+              onClick={() => onNavigate('help')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Help
+            </button>
+
+            <button
+              onClick={() => onNavigate('settings')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </button>
+          </nav>
+        </div>
+
+        {/* Sign Out Button */}
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 py-3 px-4 bg-[#08120E] border border-emerald-800/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-medium transition-all text-sm mt-6"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sign Out
+        </button>
+      </aside>
+
+      {/* MAIN DASHBOARD CONTENT */}
+      <main className="flex-1 p-8 overflow-y-auto relative z-10">
+        {/* Header Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">Events Overview</h2>
+            <p className="text-sm text-emerald-200/60 mt-1">
+              Manage and organize upcoming platforms & gatherings
+            </p>
           </div>
 
-          {/* EVENT CARDS */}
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-                : "space-y-3"
-            }
-          >
-
-            {filteredEvents.map((event) => (
-
-              <div
-                key={event.id}
-                onClick={() =>
-                  onSelectEvent?.(event.id)
-                }
-                className="
-                  bg-[#121915]
-                  border
-                  border-emerald-900/30
-                  hover:border-emerald-600/50
-                  rounded-xl
-                  overflow-hidden
-                  cursor-pointer
-                  transition-all
-                  hover:-translate-y-0.5
-                  shadow-lg
-                  group
-                "
+          <div className="flex items-center gap-3">
+            {userRole === 'ATTENDEE' && (
+              <button
+                onClick={() => setShowCodeModal(true)}
+                className="px-4 py-2.5 bg-[#12241D] border border-emerald-700/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-semibold transition-all text-sm"
               >
+                Join with Private Code
+              </button>
+            )}
 
-                {/* IMAGE */}
-                <div className="h-44 overflow-hidden relative">
+            {userRole === 'ADMIN' && (
+              <button
+                onClick={onCreateEvent}
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#0B1914] rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all text-sm"
+              >
+                + Create New Event
+              </button>
+            )}
+          </div>
+        </div>
 
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="
-                      w-full
-                      h-full
-                      object-cover
-                      group-hover:scale-105
-                      transition-transform
-                      duration-300
-                    "
-                  />
+        {/* Analytics Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+            <div>
+              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+                Total Events
+              </span>
+              <div className="text-3xl font-extrabold text-white mt-1">12</div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
 
-                  <span
-                    className="
-                      absolute
-                      top-3
-                      left-3
-                      px-3
-                      py-1
-                      bg-black/60
-                      backdrop-blur-md
-                      text-emerald-400
-                      border
-                      border-emerald-500/30
-                      rounded-full
-                      text-xs
-                      font-semibold
-                    "
-                  >
-                    {event.category}
+          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+            <div>
+              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+                Total Registered
+              </span>
+              <div className="text-3xl font-extrabold text-white mt-1">275</div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+            <div>
+              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+                Active Events
+              </span>
+              <div className="text-3xl font-extrabold text-white mt-1">3</div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Events Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockEvents.map((event) => (
+            <div
+              key={event.id}
+              onClick={() => onSelectEvent(event.id)}
+              className="group bg-[#12241D]/60 border border-emerald-800/40 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all cursor-pointer flex flex-col backdrop-blur-xl"
+            >
+              <div className="h-48 relative overflow-hidden">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-3 left-3 px-3 py-1 bg-[#08120E]/90 backdrop-blur-md border border-emerald-800/60 text-emerald-300 text-xs rounded-full font-medium">
+                  {event.category}
+                </span>
+                {event.isPrivate && (
+                  <span className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 text-[#0B1914] text-xs rounded-full font-bold">
+                    Private
                   </span>
-
-                </div>
-
-                {/* CARD CONTENT */}
-                <div className="p-5 space-y-4">
-
-                  <div>
-
-                    <h3
-                      className="
-                        font-semibold
-                        text-base
-                        text-emerald-50
-                        group-hover:text-emerald-400
-                        transition-colors
-                      "
-                    >
-                      {event.title}
-                    </h3>
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-2
-                        text-xs
-                        text-gray-400
-                        mt-2
-                      "
-                    >
-
-                      <Clock className="w-4 h-4 text-emerald-500" />
-
-                      <span>
-                        {event.date} • {event.time}
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                  <div
-                    className="
-                      flex
-                      items-center
-                      justify-between
-                      text-sm
-                      pt-3
-                      border-t
-                      border-emerald-900/20
-                      text-gray-400
-                    "
-                  >
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-2
-                        truncate
-                        pr-2
-                      "
-                    >
-
-                      <MapPin className="w-4 h-4 text-gray-500 shrink-0" />
-
-                      <span className="truncate">
-                        {event.location}
-                      </span>
-
-                    </div>
-
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-1.5
-                        shrink-0
-                        text-emerald-400
-                        font-medium
-                      "
-                    >
-
-                      <Users className="w-4 h-4" />
-
-                      <span>
-                        {event.attendeesCount}
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
+                )}
               </div>
 
-            ))}
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
+                    {event.title}
+                  </h3>
+                  <p className="text-xs text-emerald-200/60 mt-1">{event.date}</p>
+                </div>
 
+                <div className="mt-4 pt-4 border-t border-emerald-800/40 flex justify-between items-center text-xs text-emerald-300 font-medium">
+                  <span>View Details &rarr;</span>
+                  {userRole === 'ATTENDEE' && (
+                    <span className="text-emerald-400 font-bold">Register</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* Private Event Registration Modal */}
+      {showCodeModal && (
+        <div className="fixed inset-0 bg-[#0B1914]/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[#12241D] border border-emerald-800/60 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <button
+              onClick={() => setShowCodeModal(false)}
+              className="absolute top-4 right-4 text-emerald-200/60 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h3 className="text-xl font-bold text-white mb-2">Enter Private Event Code</h3>
+            <p className="text-xs text-emerald-200/60 mb-4">
+              Enter the unique access code provided by the event admin to submit your registration request.
+            </p>
+
+            {codeSuccessMsg ? (
+              <div className="p-4 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 rounded-xl text-sm font-medium">
+                {codeSuccessMsg}
+              </div>
+            ) : (
+              <form onSubmit={handlePrivateCodeSubmit} className="space-y-4">
+                <input
+                  type="text"
+                  required
+                  value={privateCode}
+                  onChange={(e) => setPrivateCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. GATE-2026"
+                  className="w-full px-4 py-3 bg-[#08120E] border border-emerald-800/60 rounded-xl text-white placeholder-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm tracking-wider uppercase font-mono"
+                />
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-[#0B1914] font-bold rounded-xl transition-all text-sm shadow-lg shadow-emerald-500/20"
+                >
+                  Submit Registration Request
+                </button>
+              </form>
+            )}
           </div>
-
-        </main>
-
-      </div>
+        </div>
+      )}
     </div>
   );
 };
