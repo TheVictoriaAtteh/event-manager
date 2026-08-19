@@ -1,24 +1,48 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Palette,
   Sun,
   Moon,
   Monitor,
 } from "lucide-react";
+import { useTheme } from "../../context/useTheme";
+import type { ThemePreference } from "../../context/theme-context";
 
 const SettingsAppearance: React.FC = () => {
-  const [theme, setTheme] = useState("dark");
+  const { theme, setTheme } = useTheme();
+
+  const options: {
+    id: ThemePreference;
+    label: string;
+    blurb: string;
+  }[] = [
+    {
+      id: "dark",
+      label: "Dark",
+      blurb: "Dark interface",
+    },
+    {
+      id: "light",
+      label: "Light",
+      blurb: "Light interface",
+    },
+    {
+      id: "system",
+      label: "System",
+      blurb: "Follow device settings",
+    },
+  ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[var(--bg-surface)] text-[var(--text-primary)]">
 
       {/* HEADER */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-[var(--text-heading)]">
           Appearance
         </h2>
 
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
           Customize how Event Manager looks.
         </p>
       </div>
@@ -33,162 +57,116 @@ const SettingsAppearance: React.FC = () => {
               w-9
               h-9
               rounded-lg
-              bg-emerald-950/40
+              bg-emerald-500/10
               border
-              border-emerald-900/40
+              border-emerald-500/20
               flex
               items-center
               justify-center
             "
           >
-            <Palette className="w-4 h-4 text-emerald-400" />
+            <Palette className="w-4 h-4 text-[var(--text-accent)]" />
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-[var(--text-heading)]">
               Theme
             </h3>
 
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Select your preferred application theme.
             </p>
           </div>
 
         </div>
 
-        {/* THEME OPTIONS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-          {/* DARK */}
-          <button
-            type="button"
-            onClick={() => setTheme("dark")}
-            className={`
-              p-4
-              rounded-xl
-              border
-              text-left
-              transition
-              ${
-                theme === "dark"
-                  ? "border-emerald-500 bg-emerald-950/40"
-                  : "border-emerald-900/30 bg-[#121915] hover:border-emerald-800"
-              }
-            `}
-          >
-            <div
-              className="
-                w-full
-                h-20
-                rounded-lg
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                mb-4
-                flex
-                items-center
-                justify-center
-              "
-            >
-              <Moon className="w-6 h-6 text-emerald-400" />
-            </div>
+          {options.map((opt) => {
+            const Icon =
+              opt.id === "dark"
+                ? Moon
+                : opt.id === "light"
+                ? Sun
+                : Monitor;
 
-            <h3 className="text-sm font-semibold text-white">
-              Dark
-            </h3>
+            const isActive = theme === opt.id;
 
-            <p className="text-xs text-gray-500 mt-1">
-              Dark interface
-            </p>
-          </button>
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setTheme(opt.id)}
+                className={`
+                  p-4
+                  rounded-xl
+                  border
+                  text-left
+                  transition
+                  ${
+                    isActive
+                      ? "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/20"
+                      : "border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-emerald-300 hover:bg-[var(--hover-surface)]"
+                  }
+                `}
+              >
 
-          {/* LIGHT */}
-          <button
-            type="button"
-            onClick={() => setTheme("light")}
-            className={`
-              p-4
-              rounded-xl
-              border
-              text-left
-              transition
-              ${
-                theme === "light"
-                  ? "border-emerald-500 bg-emerald-950/40"
-                  : "border-emerald-900/30 bg-[#121915] hover:border-emerald-800"
-              }
-            `}
-          >
-            <div
-              className="
-                w-full
-                h-20
-                rounded-lg
-                bg-gray-100
-                border
-                border-gray-300
-                mb-4
-                flex
-                items-center
-                justify-center
-              "
-            >
-              <Sun className="w-6 h-6 text-gray-700" />
-            </div>
+                {/* PREVIEW */}
+                <div
+                  className={`
+                    w-full
+                    h-20
+                    rounded-lg
+                    mb-4
+                    flex
+                    items-center
+                    justify-center
+                    border
+                    ${
+                      opt.id === "dark"
+                        ? "bg-[#121915] border-[#263b31]"
+                        : opt.id === "light"
+                        ? "bg-white border-gray-200"
+                        : "bg-gradient-to-r from-white via-white to-[#121915] border-gray-200"
+                    }
+                  `}
+                >
+                  <Icon
+                    className={`
+                      w-6
+                      h-6
+                      ${
+                        opt.id === "dark"
+                          ? "text-emerald-400"
+                          : opt.id === "light"
+                          ? "text-emerald-600"
+                          : "text-emerald-600"
+                      }
+                    `}
+                  />
+                </div>
 
-            <h3 className="text-sm font-semibold text-white">
-              Light
-            </h3>
+                <h3 className="text-sm font-semibold text-[var(--text-heading)]">
+                  {opt.label}
+                </h3>
 
-            <p className="text-xs text-gray-500 mt-1">
-              Light interface
-            </p>
-          </button>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  {opt.blurb}
+                </p>
 
-          {/* SYSTEM */}
-          <button
-            type="button"
-            onClick={() => setTheme("system")}
-            className={`
-              p-4
-              rounded-xl
-              border
-              text-left
-              transition
-              ${
-                theme === "system"
-                  ? "border-emerald-500 bg-emerald-950/40"
-                  : "border-emerald-900/30 bg-[#121915] hover:border-emerald-800"
-              }
-            `}
-          >
-            <div
-              className="
-                w-full
-                h-20
-                rounded-lg
-                bg-gradient-to-r
-                from-gray-100
-                to-[#090d0b]
-                border
-                border-gray-600
-                mb-4
-                flex
-                items-center
-                justify-center
-              "
-            >
-              <Monitor className="w-6 h-6 text-emerald-400" />
-            </div>
+                {/* ACTIVE INDICATOR */}
+                {isActive && (
+                  <div className="flex items-center gap-1.5 mt-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-medium text-emerald-600">
+                      Currently selected
+                    </span>
+                  </div>
+                )}
 
-            <h3 className="text-sm font-semibold text-white">
-              System
-            </h3>
-
-            <p className="text-xs text-gray-500 mt-1">
-              Follow device settings
-            </p>
-          </button>
+              </button>
+            );
+          })}
 
         </div>
 

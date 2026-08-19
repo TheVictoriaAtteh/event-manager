@@ -81,20 +81,6 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("All Rooms");
 
-  const filteredRooms = useMemo(() => {
-    return MOCK_ROOMS.filter((room) => {
-      const matchesSearch =
-        room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.bestFor.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesFilter =
-        filter === "All Rooms" || room.type === filter;
-
-      return matchesSearch && matchesFilter;
-    });
-  }, [searchTerm, filter]);
-
   const roomTypes = [
     "All Rooms",
     "Hall",
@@ -105,27 +91,37 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
     "Lounge",
   ];
 
+  const filteredRooms = useMemo(() => {
+    return MOCK_ROOMS.filter((room) => {
+      const search = searchTerm.toLowerCase();
+
+      const matchesSearch =
+        room.name.toLowerCase().includes(search) ||
+        room.type.toLowerCase().includes(search) ||
+        room.bestFor.toLowerCase().includes(search);
+
+      const matchesFilter =
+        filter === "All Rooms" || room.type === filter;
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchTerm, filter]);
+
   return (
-    <div
-      className="min-h-screen bg-[#090d0b] text-white"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, rgba(16,185,129,0.35) 1px, transparent 1px)",
-        backgroundSize: "32px 32px",
-      }}
-    >
-      <div className="max-w-[1500px] mx-auto px-6 py-8">
+    <div className="bg-dot-grid min-h-screen text-[var(--text-primary)] font-sans">
+      <div className="max-w-[1500px] mx-auto px-6 sm:px-10 py-8">
 
         {/* TOP ACTIONS */}
         <div className="flex items-center justify-between mb-8">
-
           <button
             onClick={() => onNavigate?.("dashboard")}
             className="
               flex items-center gap-2
-              text-sm text-gray-400
-              hover:text-white
+              text-sm
+              text-[var(--text-secondary)]
+              hover:text-[var(--text-primary)]
               transition-colors
+              cursor-pointer
             "
           >
             <ArrowLeft className="w-4 h-4" />
@@ -137,64 +133,81 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
             className="
               flex items-center gap-2
               px-4 py-2.5
-              rounded-xl
-              border border-emerald-600/40
-              bg-[#0b1712]
-              text-emerald-400
-              text-sm font-medium
-              hover:bg-emerald-900/30
-              hover:border-emerald-500
-              transition-all
+              rounded-lg
+              bg-emerald-500
+              hover:bg-emerald-400
+              text-emerald-950
+              text-sm
+              font-semibold
+              transition-colors
+              cursor-pointer
+              shadow-lg
+              shadow-emerald-500/10
             "
           >
             <Plus className="w-4 h-4" />
             Add Room
           </button>
-
         </div>
 
         {/* MAIN PANEL */}
         <div
           className="
-            bg-[#121915]
-            border border-emerald-900/40
+            bg-[var(--bg-surface)]
+            border border-[var(--border-default)]
             rounded-2xl
             overflow-hidden
+            shadow-sm
           "
         >
-
           {/* HEADER */}
-          <div className="px-10 pt-10 pb-6">
+          <div className="px-6 sm:px-10 pt-8 sm:pt-10 pb-6">
+            <div className="flex items-start gap-4">
+              <div
+                className="
+                  w-10 h-10
+                  rounded-xl
+                  bg-emerald-500/10
+                  border border-emerald-500/20
+                  flex items-center justify-center
+                  text-emerald-500
+                  shrink-0
+                "
+              >
+                <Building2 className="w-5 h-5" />
+              </div>
 
-            <h1 className="text-2xl font-bold text-emerald-50">
-              Rooms
-            </h1>
+              <div>
+                <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+                  Rooms
+                </h1>
 
-            <p className="text-sm text-gray-400 mt-2">
-              Manage event spaces, room capacities, and assignments.
-            </p>
-
+                <p className="text-sm text-[var(--text-secondary)] mt-1.5">
+                  Manage event spaces, room capacities, and assignments.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* SEARCH + FILTER */}
           <div
             className="
-              px-10 pb-7
-              flex flex-col md:flex-row
-              md:items-center
-              md:justify-between
+              px-6 sm:px-10 pb-7
+              flex flex-col
+              lg:flex-row
+              lg:items-center
+              lg:justify-between
               gap-4
             "
           >
-
-            <div className="relative w-full md:w-[420px]">
-
+            {/* SEARCH */}
+            <div className="relative w-full lg:w-[420px]">
               <Search
                 className="
-                  absolute left-3 top-1/2
+                  absolute left-3.5 top-1/2
                   -translate-y-1/2
                   w-4 h-4
-                  text-gray-500
+                  text-[var(--text-muted)]
                 "
               />
 
@@ -206,139 +219,190 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
                 className="
                   w-full
                   pl-10 pr-4 py-2.5
-                  bg-[#090d0b]
-                  border border-emerald-900/40
-                  rounded-xl
-                  text-sm text-white
-                  placeholder-gray-500
+                  bg-[var(--bg-input)]
+                  border border-[var(--border-default)]
+                  rounded-lg
+                  text-sm
+                  text-[var(--text-primary)]
+                  placeholder:text-[var(--text-muted)]
                   focus:outline-none
                   focus:border-emerald-500
+                  focus:ring-2
+                  focus:ring-emerald-500/10
+                  transition-all
                 "
               />
-
             </div>
 
+            {/* FILTERS */}
             <div className="flex items-center gap-2 flex-wrap">
-
               {roomTypes.slice(0, 4).map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilter(type)}
                   className={`
                     px-4 py-2
-                    rounded-xl
-                    text-xs font-medium
+                    rounded-lg
+                    text-xs
+                    font-medium
                     border
                     transition-all
+                    cursor-pointer
+
                     ${
                       filter === type
-                        ? "bg-emerald-900/40 border-emerald-600/60 text-emerald-400"
-                        : "bg-[#090d0b] border-emerald-900/30 text-gray-400 hover:text-white hover:border-emerald-800"
+                        ? `
+                          bg-emerald-500/10
+                          border-emerald-500/30
+                          text-emerald-500
+                        `
+                        : `
+                          bg-[var(--bg-input)]
+                          border-[var(--border-default)]
+                          text-[var(--text-secondary)]
+                          hover:text-[var(--text-primary)]
+                          hover:border-emerald-500/30
+                        `
                     }
                   `}
                 >
                   {type}
                 </button>
               ))}
-
             </div>
-
           </div>
 
+          {/* DIVIDER */}
+          <div className="border-t border-[var(--border-subtle)]" />
+
           {/* ROOMS */}
-          <div className="px-10 pb-10">
+          <div className="px-6 sm:px-10 py-8">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                  Event Spaces
+                </h2>
 
+                <p className="text-xs text-[var(--text-muted)] mt-1">
+                  {filteredRooms.length}{" "}
+                  {filteredRooms.length === 1 ? "room" : "rooms"} available
+                </p>
+              </div>
+            </div>
+
+            {/* ROOM GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
               {filteredRooms.map((room) => (
                 <div
                   key={room.id}
                   className="
-                    bg-[#090d0b]
-                    border border-emerald-900/30
+                    bg-[var(--bg-input)]
+                    border border-[var(--border-subtle)]
                     rounded-xl
                     p-5
-                    hover:border-emerald-700/60
+                    hover:border-emerald-500/30
+                    hover:shadow-sm
                     transition-all
                   "
                 >
-
+                  {/* CARD HEADER */}
                   <div className="flex items-start justify-between">
-
                     <div className="flex items-center gap-3">
-
                       <div
                         className="
                           w-10 h-10
                           rounded-lg
-                          bg-emerald-900/30
-                          border border-emerald-800/40
+                          bg-emerald-500/10
+                          border border-emerald-500/20
                           flex items-center justify-center
+                          shrink-0
                         "
                       >
-                        <Building2 className="w-5 h-5 text-emerald-400" />
+                        <Building2 className="w-5 h-5 text-emerald-500" />
                       </div>
 
                       <div>
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                           {room.name}
                         </h3>
 
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-[var(--text-muted)] mt-1">
                           {room.type}
                         </p>
                       </div>
-
                     </div>
 
                     <button
                       className="
                         p-1.5
                         rounded-lg
-                        text-gray-500
-                        hover:text-white
-                        hover:bg-emerald-950/50
+                        text-[var(--text-muted)]
+                        hover:text-[var(--text-primary)]
+                        hover:bg-[var(--bg-surface)]
+                        transition-colors
+                        cursor-pointer
                       "
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
-
                   </div>
 
-                  <div className="border-t border-emerald-900/20 my-5" />
+                  {/* DIVIDER */}
+                  <div className="border-t border-[var(--border-subtle)] my-5" />
 
+                  {/* DETAILS */}
                   <div className="space-y-3">
-
                     <div className="flex items-center justify-between">
-
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div
+                        className="
+                          flex items-center gap-2
+                          text-xs
+                          text-[var(--text-secondary)]
+                        "
+                      >
                         <Users className="w-4 h-4 text-emerald-500" />
                         Capacity
                       </div>
 
-                      <span className="text-sm text-gray-200 font-medium">
+                      <span
+                        className="
+                          text-sm
+                          text-[var(--text-primary)]
+                          font-semibold
+                        "
+                      >
                         {room.capacity}
                       </span>
-
                     </div>
 
-                    <div className="flex items-center justify-between">
-
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <div className="flex items-center justify-between gap-4">
+                      <div
+                        className="
+                          flex items-center gap-2
+                          text-xs
+                          text-[var(--text-secondary)]
+                          shrink-0
+                        "
+                      >
                         <MapPin className="w-4 h-4 text-emerald-500" />
                         Best For
                       </div>
 
-                      <span className="text-xs text-gray-300 text-right max-w-[180px]">
+                      <span
+                        className="
+                          text-xs
+                          text-[var(--text-secondary)]
+                          text-right
+                          max-w-[180px]
+                        "
+                      >
                         {room.bestFor}
                       </span>
-
                     </div>
-
                   </div>
 
+                  {/* CARD FOOTER */}
                   <div className="mt-5 flex items-center justify-between">
-
                     <span
                       className={`
                         inline-flex
@@ -348,10 +412,19 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
                         text-[11px]
                         font-medium
                         border
+
                         ${
                           room.status === "Available"
-                            ? "bg-emerald-950/50 border-emerald-700/40 text-emerald-400"
-                            : "bg-yellow-950/40 border-yellow-700/40 text-yellow-400"
+                            ? `
+                              bg-emerald-500/10
+                              border-emerald-500/20
+                              text-emerald-500
+                            `
+                            : `
+                              bg-amber-500/10
+                              border-amber-500/20
+                              text-amber-500
+                            `
                         }
                       `}
                     >
@@ -361,38 +434,46 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
                     <button
                       className="
                         text-xs
-                        text-gray-500
-                        hover:text-emerald-400
+                        text-[var(--text-secondary)]
+                        hover:text-emerald-500
+                        transition-colors
+                        cursor-pointer
                       "
                     >
                       View Details
                     </button>
-
                   </div>
-
                 </div>
               ))}
-
             </div>
 
+            {/* EMPTY STATE */}
             {filteredRooms.length === 0 && (
               <div className="py-16 text-center">
+                <div
+                  className="
+                    w-12 h-12
+                    mx-auto
+                    mb-4
+                    rounded-xl
+                    bg-emerald-500/10
+                    border border-emerald-500/20
+                    flex items-center justify-center
+                  "
+                >
+                  <Building2 className="w-5 h-5 text-emerald-500" />
+                </div>
 
-                <Building2 className="w-10 h-10 mx-auto text-gray-600 mb-3" />
-
-                <h3 className="text-sm font-medium text-gray-300">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                   No rooms found
                 </h3>
 
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[var(--text-muted)] mt-1">
                   Try changing your search or filter.
                 </p>
-
               </div>
             )}
-
           </div>
-
         </div>
       </div>
     </div>

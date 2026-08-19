@@ -13,16 +13,35 @@ const SettingsProfile: React.FC = () => {
   const [phone, setPhone] = useState("+234 800 000 0000");
   const [role, setRole] = useState("Administrator");
 
+  const inputClass = `
+    w-full
+    pl-10
+    pr-4
+    py-2.5
+    bg-[var(--bg-input)]
+    border
+    border-[var(--border-default)]
+    rounded-lg
+    text-sm
+    text-[var(--text-primary)]
+    placeholder-[var(--text-muted)]
+    focus:outline-none
+    focus:border-emerald-500
+    focus:ring-1
+    focus:ring-emerald-500/20
+    transition
+  `;
+
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[var(--bg-surface)] text-[var(--text-primary)]">
 
       {/* HEADER */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-[var(--text-heading)]">
           Profile
         </h2>
 
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
           Manage your personal information.
         </p>
       </div>
@@ -35,13 +54,13 @@ const SettingsProfile: React.FC = () => {
             w-20
             h-20
             rounded-full
-            bg-emerald-900/50
+            bg-emerald-500/10
             border
-            border-emerald-700/40
+            border-emerald-500/20
             flex
             items-center
             justify-center
-            text-emerald-300
+            text-emerald-600
             text-xl
             font-bold
             shrink-0
@@ -51,26 +70,28 @@ const SettingsProfile: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-base font-semibold text-white">
+          <h3 className="text-base font-semibold text-[var(--text-heading)]">
             Profile Photo
           </h3>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             Your profile image will be visible throughout the system.
           </p>
 
           <button
+            type="button"
             className="
               mt-3
               px-3
               py-1.5
               text-xs
               font-medium
-              text-emerald-400
+              text-[var(--text-accent)]
               border
-              border-emerald-800/50
+              border-[var(--border-default)]
               rounded-lg
-              hover:bg-emerald-950/40
+              hover:bg-[var(--hover-surface)]
+              hover:border-emerald-300
               transition
             "
           >
@@ -85,7 +106,7 @@ const SettingsProfile: React.FC = () => {
 
         {/* NAME */}
         <div>
-          <label className="block text-xs text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
             Full Name
           </label>
 
@@ -98,34 +119,21 @@ const SettingsProfile: React.FC = () => {
                 -translate-y-1/2
                 w-4
                 h-4
-                text-gray-500
+                text-[var(--text-muted)]
               "
             />
 
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={inputClass}
             />
           </div>
         </div>
 
         {/* EMAIL */}
         <div>
-          <label className="block text-xs text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
             Email Address
           </label>
 
@@ -138,34 +146,22 @@ const SettingsProfile: React.FC = () => {
                 -translate-y-1/2
                 w-4
                 h-4
-                text-gray-500
+                text-[var(--text-muted)]
               "
             />
 
             <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={inputClass}
             />
           </div>
         </div>
 
         {/* PHONE */}
         <div>
-          <label className="block text-xs text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
             Phone Number
           </label>
 
@@ -178,34 +174,21 @@ const SettingsProfile: React.FC = () => {
                 -translate-y-1/2
                 w-4
                 h-4
-                text-gray-500
+                text-[var(--text-muted)]
               "
             />
 
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={inputClass}
             />
           </div>
         </div>
 
         {/* ROLE */}
         <div>
-          <label className="block text-xs text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
             Role
           </label>
 
@@ -218,27 +201,14 @@ const SettingsProfile: React.FC = () => {
                 -translate-y-1/2
                 w-4
                 h-4
-                text-gray-500
+                text-[var(--text-muted)]
               "
             />
 
             <input
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={inputClass}
             />
           </div>
         </div>
@@ -246,9 +216,10 @@ const SettingsProfile: React.FC = () => {
       </div>
 
       {/* SAVE */}
-      <div className="flex justify-end mt-7 pt-5 border-t border-emerald-900/20">
+      <div className="flex justify-end mt-7 pt-5 border-t border-[var(--border-subtle)]">
 
         <button
+          type="button"
           className="
             flex
             items-center
@@ -257,11 +228,13 @@ const SettingsProfile: React.FC = () => {
             py-2.5
             bg-emerald-600
             hover:bg-emerald-500
-            text-emerald-950
+            text-white
             font-semibold
             text-sm
             rounded-lg
             transition
+            shadow-sm
+            shadow-emerald-600/20
           "
         >
           <Save className="w-4 h-4" />

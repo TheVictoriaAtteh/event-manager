@@ -72,13 +72,13 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1914] text-white flex bg-dot-grid relative overflow-hidden">
+    <div className="bg-dot-grid min-h-screen text-[var(--text-primary)] flex relative overflow-hidden">
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* COLLAPSIBLE SIDEBAR */}
       <aside
-        className={`bg-[#12241D]/90 backdrop-blur-xl border-r border-emerald-800/40 p-4 flex flex-col justify-between hidden md:flex z-20 transition-all duration-300 relative ${
+        className={`bg-[var(--bg-surface)] border-r border-[var(--border-default)] p-4 flex flex-col justify-between hidden md:flex z-20 transition-all duration-300 relative ${
           isSidebarCollapsed ? 'w-20' : 'w-64'
         }`}
       >
@@ -89,7 +89,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-end'}`}>
               <button
                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                className="p-1.5 rounded-lg text-emerald-300/70 hover:text-white hover:bg-emerald-900/40 transition-colors border border-emerald-800/40"
+                className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)] transition-colors border border-[var(--border-default)]"
                 title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
               >
                 <svg
@@ -105,13 +105,13 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
 
             {/* Brand Logo & Title */}
             <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-1'}`}>
-              <div className="h-10 w-10 min-w-[2.5rem] rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
+              <div className="h-10 w-10 min-w-[2.5rem] rounded-xl bg-emerald-500 flex items-center justify-center text-emerald-950 font-extrabold text-xl shadow-lg shadow-emerald-500/20">
                 G
               </div>
               {!isSidebarCollapsed && (
                 <div className="whitespace-nowrap transition-opacity duration-200">
-                  <h1 className="font-bold text-lg text-white leading-none">Gatepass</h1>
-                  <span className="text-xs text-emerald-400 font-medium capitalize">{userRole} Console</span>
+                  <h1 className="font-bold text-lg text-[var(--text-heading)] leading-none">Gatepass</h1>
+                  <span className="text-xs text-[var(--text-accent)] font-medium capitalize">{userRole} Console</span>
                 </div>
               )}
             </div>
@@ -122,7 +122,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('dashboard')}
               title={isSidebarCollapsed ? 'Events Dashboard' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-500 text-[#0B1914] font-bold shadow-md shadow-emerald-500/10 text-sm transition-all ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-500 text-emerald-950 font-bold shadow-md shadow-emerald-500/10 text-sm transition-all ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -135,7 +135,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={onNavigateToAttendees}
               title={isSidebarCollapsed ? 'Attendees List' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -148,7 +148,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('rooms')}
               title={isSidebarCollapsed ? 'Rooms' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -161,7 +161,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('teams')}
               title={isSidebarCollapsed ? 'Teams / Booths' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -174,7 +174,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('check-in')}
               title={isSidebarCollapsed ? 'Check-In' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -187,7 +187,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('check-in-log')}
               title={isSidebarCollapsed ? 'Check-In Log' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -200,7 +200,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('help')}
               title={isSidebarCollapsed ? 'Help' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -213,7 +213,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <button
               onClick={() => onNavigate('settings')}
               title={isSidebarCollapsed ? 'Settings' : ''}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -230,7 +230,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
         <button
           onClick={onLogout}
           title={isSidebarCollapsed ? 'Sign Out' : ''}
-          className={`w-full flex items-center gap-3 py-3 px-3.5 bg-[#08120E] border border-emerald-800/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-medium transition-all text-sm mt-6 ${
+          className={`w-full flex items-center gap-3 py-3 px-3.5 bg-[var(--bg-input)] border border-[var(--border-default)] hover:bg-[var(--hover-surface)] text-[var(--text-secondary)] rounded-xl font-medium transition-all text-sm mt-6 ${
             isSidebarCollapsed ? 'justify-center' : ''
           }`}
         >
@@ -246,8 +246,8 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
         {/* Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">Events Overview</h2>
-            <p className="text-sm text-emerald-200/60 mt-1">
+            <h2 className="text-3xl font-extrabold text-[var(--text-heading)] tracking-tight">Events Overview</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
               Manage and organize upcoming platforms & gatherings
             </p>
           </div>
@@ -256,7 +256,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             {userRole === 'ATTENDEE' && (
               <button
                 onClick={() => setShowCodeModal(true)}
-                className="px-4 py-2.5 bg-[#12241D] border border-emerald-700/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-semibold transition-all text-sm"
+                className="px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border-default)] hover:bg-[var(--hover-surface)] text-[var(--text-accent)] rounded-xl font-semibold transition-all text-sm"
               >
                 Join with Private Code
               </button>
@@ -265,7 +265,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             {userRole === 'ADMIN' && (
               <button
                 onClick={onCreateEvent}
-                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#0B1914] rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all text-sm"
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all text-sm"
               >
                 + Create New Event
               </button>
@@ -275,42 +275,42 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
 
         {/* Analytics Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6 rounded-2xl flex justify-between items-center">
             <div>
-              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+              <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-semibold">
                 Total Events
               </span>
-              <div className="text-3xl font-extrabold text-white mt-1">12</div>
+              <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">12</div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--text-accent)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
           </div>
 
-          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6 rounded-2xl flex justify-between items-center">
             <div>
-              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+              <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-semibold">
                 Total Registered
               </span>
-              <div className="text-3xl font-extrabold text-white mt-1">275</div>
+              <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">275</div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--text-accent)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
           </div>
 
-          <div className="bg-[#12241D]/80 border border-emerald-800/40 p-6 rounded-2xl backdrop-blur-xl flex justify-between items-center">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6 rounded-2xl flex justify-between items-center">
             <div>
-              <span className="text-xs text-emerald-200/60 uppercase tracking-wider font-semibold">
+              <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-semibold">
                 Active Events
               </span>
-              <div className="text-3xl font-extrabold text-white mt-1">3</div>
+              <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">3</div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--text-accent)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -324,7 +324,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             <div
               key={event.id}
               onClick={() => onSelectEvent(event.id)}
-              className="group bg-[#12241D]/60 border border-emerald-800/40 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all cursor-pointer flex flex-col backdrop-blur-xl"
+              className="group bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all cursor-pointer flex flex-col"
             >
               <div className="h-48 relative overflow-hidden">
                 <img
@@ -332,11 +332,11 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
                   alt={event.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="absolute top-3 left-3 px-3 py-1 bg-[#08120E]/90 backdrop-blur-md border border-emerald-800/60 text-emerald-300 text-xs rounded-full font-medium">
+                <span className="absolute top-3 left-3 px-3 py-1 bg-[var(--bg-input)]/90 backdrop-blur-md border border-[var(--border-default)] text-[var(--text-accent)] text-xs rounded-full font-medium">
                   {event.category}
                 </span>
                 {event.isPrivate && (
-                  <span className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 text-[#0B1914] text-xs rounded-full font-bold">
+                  <span className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 text-amber-950 text-xs rounded-full font-bold">
                     Private
                   </span>
                 )}
@@ -344,16 +344,16 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
 
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
+                  <h3 className="font-bold text-lg text-[var(--text-primary)] group-hover:text-emerald-500 transition-colors">
                     {event.title}
                   </h3>
-                  <p className="text-xs text-emerald-200/60 mt-1">{event.date}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">{event.date}</p>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-emerald-800/40 flex justify-between items-center text-xs text-emerald-300 font-medium">
+                <div className="mt-4 pt-4 border-t border-[var(--border-default)] flex justify-between items-center text-xs text-[var(--text-accent)] font-medium">
                   <span>View Details &rarr;</span>
                   {userRole === 'ATTENDEE' && (
-                    <span className="text-emerald-400 font-bold">Register</span>
+                    <span className="text-[var(--text-accent)] font-bold">Register</span>
                   )}
                 </div>
               </div>
@@ -364,21 +364,21 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
 
       {/* Private Event Registration Modal */}
       {showCodeModal && (
-        <div className="fixed inset-0 bg-[#0B1914]/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-[#12241D] border border-emerald-800/60 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+        <div className="fixed inset-0 bg-[var(--overlay)] backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
             <button
               onClick={() => setShowCodeModal(false)}
-              className="absolute top-4 right-4 text-emerald-200/60 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               ✕
             </button>
-            <h3 className="text-xl font-bold text-white mb-2">Enter Private Event Code</h3>
-            <p className="text-xs text-emerald-200/60 mb-4">
+            <h3 className="text-xl font-bold text-[var(--text-heading)] mb-2">Enter Private Event Code</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-4">
               Enter the unique access code provided by the event admin to submit your registration request.
             </p>
 
             {codeSuccessMsg ? (
-              <div className="p-4 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 rounded-xl text-sm font-medium">
+              <div className="p-4 bg-[var(--badge-success-bg)] border border-emerald-500/40 text-[var(--badge-success-text)] rounded-xl text-sm font-medium">
                 {codeSuccessMsg}
               </div>
             ) : (
@@ -389,11 +389,11 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
                   value={privateCode}
                   onChange={(e) => setPrivateCode(e.target.value.toUpperCase())}
                   placeholder="e.g. GATE-2026"
-                  className="w-full px-4 py-3 bg-[#08120E] border border-emerald-800/60 rounded-xl text-white placeholder-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm tracking-wider uppercase font-mono"
+                  className="w-full px-4 py-3 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm tracking-wider uppercase font-mono"
                 />
                 <button
                   type="submit"
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-[#0B1914] font-bold rounded-xl transition-all text-sm shadow-lg shadow-emerald-500/20"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold rounded-xl transition-all text-sm shadow-lg shadow-emerald-500/20"
                 >
                   Submit Registration Request
                 </button>

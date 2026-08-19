@@ -10,16 +10,53 @@ const SettingsSecurity: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
 
+  const inputClass = `
+    w-full
+    pl-10
+    pr-10
+    py-2.5
+    bg-[var(--bg-input)]
+    border
+    border-[var(--border-default)]
+    rounded-lg
+    text-sm
+    text-[var(--text-primary)]
+    placeholder-[var(--text-muted)]
+    focus:outline-none
+    focus:border-emerald-500
+    focus:ring-1
+    focus:ring-emerald-500/20
+    transition
+  `;
+
+  const normalInputClass = `
+    w-full
+    px-4
+    py-2.5
+    bg-[var(--bg-input)]
+    border
+    border-[var(--border-default)]
+    rounded-lg
+    text-sm
+    text-[var(--text-primary)]
+    placeholder-[var(--text-muted)]
+    focus:outline-none
+    focus:border-emerald-500
+    focus:ring-1
+    focus:ring-emerald-500/20
+    transition
+  `;
+
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[var(--bg-surface)] text-[var(--text-primary)]">
 
       {/* HEADER */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-[var(--text-heading)]">
           Security
         </h2>
 
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
           Manage your password and account security.
         </p>
       </div>
@@ -34,23 +71,23 @@ const SettingsSecurity: React.FC = () => {
               w-9
               h-9
               rounded-lg
-              bg-emerald-950/40
+              bg-emerald-500/10
               border
-              border-emerald-900/40
+              border-emerald-500/20
               flex
               items-center
               justify-center
             "
           >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-[var(--text-accent)]" />
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-[var(--text-heading)]">
               Change Password
             </h3>
 
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Update your password regularly to keep your account secure.
             </p>
           </div>
@@ -62,7 +99,7 @@ const SettingsSecurity: React.FC = () => {
           {/* CURRENT PASSWORD */}
           <div className="mb-4">
 
-            <label className="block text-xs text-gray-400 mb-2">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
               Current Password
             </label>
 
@@ -76,28 +113,14 @@ const SettingsSecurity: React.FC = () => {
                   -translate-y-1/2
                   w-4
                   h-4
-                  text-gray-500
+                  text-[var(--text-muted)]
                 "
               />
 
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter current password"
-                className="
-                  w-full
-                  pl-10
-                  pr-10
-                  py-2.5
-                  bg-[#090d0b]
-                  border
-                  border-emerald-900/40
-                  rounded-lg
-                  text-sm
-                  text-white
-                  placeholder-gray-600
-                  focus:outline-none
-                  focus:border-emerald-500
-                "
+                className={inputClass}
               />
 
               <button
@@ -108,9 +131,15 @@ const SettingsSecurity: React.FC = () => {
                   right-3
                   top-1/2
                   -translate-y-1/2
-                  text-gray-500
-                  hover:text-white
+                  text-[var(--text-muted)]
+                  hover:text-[var(--text-primary)]
+                  transition
                 "
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -126,27 +155,14 @@ const SettingsSecurity: React.FC = () => {
           {/* NEW PASSWORD */}
           <div className="mb-4">
 
-            <label className="block text-xs text-gray-400 mb-2">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
               New Password
             </label>
 
             <input
               type="password"
               placeholder="Enter new password"
-              className="
-                w-full
-                px-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                placeholder-gray-600
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={normalInputClass}
             />
 
           </div>
@@ -154,27 +170,14 @@ const SettingsSecurity: React.FC = () => {
           {/* CONFIRM PASSWORD */}
           <div>
 
-            <label className="block text-xs text-gray-400 mb-2">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
               Confirm New Password
             </label>
 
             <input
               type="password"
               placeholder="Confirm new password"
-              className="
-                w-full
-                px-4
-                py-2.5
-                bg-[#090d0b]
-                border
-                border-emerald-900/40
-                rounded-lg
-                text-sm
-                text-white
-                placeholder-gray-600
-                focus:outline-none
-                focus:border-emerald-500
-              "
+              className={normalInputClass}
             />
 
           </div>
@@ -189,11 +192,13 @@ const SettingsSecurity: React.FC = () => {
                 py-2.5
                 bg-emerald-600
                 hover:bg-emerald-500
-                text-emerald-950
+                text-white
                 font-semibold
                 text-sm
                 rounded-lg
                 transition
+                shadow-sm
+                shadow-emerald-600/20
               "
             >
               Update Password
@@ -206,23 +211,17 @@ const SettingsSecurity: React.FC = () => {
       </div>
 
       {/* TWO FACTOR */}
-      <div
-        className="
-          border-t
-          border-emerald-900/20
-          pt-6
-        "
-      >
+      <div className="border-t border-[var(--border-subtle)] pt-6">
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-6">
 
           <div>
 
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-[var(--text-heading)]">
               Two-Factor Authentication
             </h3>
 
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Add an extra layer of protection to your account.
             </p>
 
@@ -232,17 +231,22 @@ const SettingsSecurity: React.FC = () => {
           <button
             type="button"
             onClick={() => setTwoFactor(!twoFactor)}
+            aria-pressed={twoFactor}
             className={`
               relative
               w-11
               h-6
               rounded-full
               transition-colors
+              duration-200
               shrink-0
+              focus:outline-none
+              focus:ring-2
+              focus:ring-emerald-500/30
               ${
                 twoFactor
                   ? "bg-emerald-600"
-                  : "bg-gray-700"
+                  : "bg-[var(--toggle-off)]"
               }
             `}
           >
@@ -255,7 +259,9 @@ const SettingsSecurity: React.FC = () => {
                 h-4
                 rounded-full
                 bg-white
+                shadow-sm
                 transition-transform
+                duration-200
                 ${
                   twoFactor
                     ? "translate-x-5"

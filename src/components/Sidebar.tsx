@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CalendarDays,
   Users,
@@ -11,6 +11,8 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,58 +30,34 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   onLogout,
 }) => {
+  const [settingsOpen, setSettingsOpen] = useState(
+    activeScreen.startsWith("settings")
+  );
+
   const menuItems = [
-    {
-      id: "dashboard",
-      label: "Events Dashboard",
-      icon: CalendarDays,
-    },
-    {
-      id: "attendees",
-      label: "Attendees List",
-      icon: Users,
-    },
-    {
-      id: "rooms",
-      label: "Rooms",
-      icon: Building2,
-    },
-    {
-      id: "booths",
-      label: "Teams / Booths",
-      icon: Tent,
-    },
-    {
-      id: "check-in",
-      label: "Check-In",
-      icon: ScanLine,
-    },
-    {
-      id: "check-in-log",
-      label: "Check-In Log",
-      icon: ClipboardList,
-    },
+    { id: "dashboard", label: "Events Dashboard", icon: CalendarDays },
+    { id: "attendees", label: "Attendees List", icon: Users },
+    { id: "rooms", label: "Rooms", icon: Building2 },
+    { id: "booths", label: "Teams / Booths", icon: Tent },
+    { id: "check-in", label: "Check-In", icon: ScanLine },
+    { id: "check-in-log", label: "Check-In Log", icon: ClipboardList },
   ];
 
-  const bottomItems = [
-    {
-      id: "help",
-      label: "Help",
-      icon: CircleHelp,
-    },
-    {
-      id: "settings",
-      label: "Settings",
-      icon: Settings,
-    },
+  const settingsItems = [
+    { id: "settings-profile", label: "Profile" },
+    { id: "settings-security", label: "Security" },
+    { id: "settings-notifications", label: "Notifications" },
+    { id: "settings-appearance", label: "Appearance" },
   ];
+
+  const settingsIsActive = activeScreen.startsWith("settings");
 
   return (
     <aside
       className={`
         h-screen
-        bg-[#090d0b]
-        border-r border-emerald-900/30
+        bg-[var(--bg-input)]
+        border-r border-[var(--border-subtle)]
         flex flex-col
         shrink-0
         transition-all duration-200
@@ -88,24 +66,17 @@ const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* ==================== BRAND ==================== */}
       <div className="px-6 pt-7 pb-5">
-        <div
-          className={`
-            flex items-center
-            ${collapsed ? "justify-center" : "gap-3"}
-          `}
-        >
-          {/* Logo */}
-          <div className="w-10 h-10 rounded-xl bg-emerald-950/70 border border-emerald-700/40 flex items-center justify-center shrink-0">
-            <CalendarDays className="w-5 h-5 text-emerald-400" />
+        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
+          <div className="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-default)] flex items-center justify-center shrink-0">
+            <CalendarDays className="w-5 h-5 text-[var(--text-accent)]" />
           </div>
 
           {!collapsed && (
             <div>
-              <h1 className="text-sm font-bold text-white">
+              <h1 className="text-sm font-bold text-[var(--text-heading)]">
                 Event Manager
               </h1>
-
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
                 Admin Console
               </p>
             </div>
@@ -119,15 +90,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={onToggle}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="
-            w-full
-            flex
-            items-center
-            justify-center
-            py-2
-            rounded-lg
-            text-gray-500
-            hover:text-emerald-400
-            hover:bg-emerald-950/30
+            w-full flex items-center justify-center py-2 rounded-lg
+            text-[var(--text-muted)]
+            hover:text-[var(--text-accent)]
+            hover:bg-[var(--hover-surface)]
             transition-colors
           "
         >
@@ -151,30 +117,18 @@ const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onNavigate?.(item.id)}
               title={collapsed ? item.label : undefined}
               className={`
-                w-full
-                flex
-                items-center
+                w-full flex items-center
                 ${collapsed ? "justify-center" : "gap-3"}
-                px-3
-                py-2.5
-                rounded-lg
-                text-left
-                transition-colors
-
+                px-3 py-2.5 rounded-lg text-left transition-colors
                 ${
                   isActive
-                    ? "bg-emerald-950/70 border border-emerald-800/50 text-emerald-400"
-                    : "text-gray-400 hover:text-white hover:bg-emerald-950/30"
+                    ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
                 }
               `}
             >
               <Icon className="w-4 h-4 shrink-0" />
-
-              {!collapsed && (
-                <span className="text-xs font-medium">
-                  {item.label}
-                </span>
-              )}
+              {!collapsed && <span className="text-xs font-medium">{item.label}</span>}
             </button>
           );
         })}
@@ -183,74 +137,106 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* ==================== SPACER ==================== */}
       <div className="flex-1" />
 
-      {/* ==================== HELP + SETTINGS ==================== */}
-      <nav className="px-4 pb-2 space-y-1">
-        {bottomItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeScreen === item.id;
+      {/* ==================== HELP ==================== */}
+      <nav className="px-4 pb-2">
+        <button
+          onClick={() => onNavigate?.("help")}
+          title={collapsed ? "Help" : undefined}
+          className={`
+            w-full flex items-center
+            ${collapsed ? "justify-center" : "gap-3"}
+            px-3 py-2.5 rounded-lg text-left transition-colors
+            ${
+              activeScreen === "help"
+                ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+            }
+          `}
+        >
+          <CircleHelp className="w-4 h-4 shrink-0" />
+          {!collapsed && <span className="text-xs font-medium">Help</span>}
+        </button>
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => onNavigate?.(item.id)}
-              title={collapsed ? item.label : undefined}
-              className={`
-                w-full
-                flex
-                items-center
-                ${collapsed ? "justify-center" : "gap-3"}
-                px-3
-                py-2.5
-                rounded-lg
-                text-left
-                transition-colors
+        {/* ==================== SETTINGS ==================== */}
+        <div className="mt-1">
+          <button
+            onClick={() => {
+              if (collapsed) {
+                onNavigate?.("settings-profile");
+              } else {
+                setSettingsOpen(!settingsOpen);
+              }
+            }}
+            title={collapsed ? "Settings" : undefined}
+            className={`
+              w-full flex items-center
+              ${collapsed ? "justify-center" : "gap-3"}
+              px-3 py-2.5 rounded-lg text-left transition-colors
+              ${
+                settingsIsActive
+                  ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+              }
+            `}
+          >
+            <Settings className="w-4 h-4 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="text-xs font-medium flex-1">Settings</span>
+                {settingsOpen ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </>
+            )}
+          </button>
 
-                ${
-                  isActive
-                    ? "bg-emerald-950/70 border border-emerald-800/50 text-emerald-400"
-                    : "text-gray-400 hover:text-white hover:bg-emerald-950/30"
-                }
-              `}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
+          {/* ==================== SETTINGS DROPDOWN ==================== */}
+          {!collapsed && settingsOpen && (
+            <div className="ml-8 mt-1 pl-3 border-l border-[var(--border-default)] space-y-1">
+              {settingsItems.map((item) => {
+                const isActive = activeScreen === item.id;
 
-              {!collapsed && (
-                <span className="text-xs font-medium">
-                  {item.label}
-                </span>
-              )}
-            </button>
-          );
-        })}
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate?.(item.id)}
+                    className={`
+                      w-full text-left px-3 py-2 rounded-md text-xs transition-colors
+                      ${
+                        isActive
+                          ? "text-[var(--nav-active-text)] bg-[var(--nav-active-bg)]"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+                      }
+                    `}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* ==================== SIGN OUT ==================== */}
-      <div className="border-t border-emerald-900/20 px-4 py-4">
+      <div className="border-t border-[var(--border-subtle)] px-4 py-4">
         <button
           onClick={onLogout}
           title={collapsed ? "Sign Out" : undefined}
           className={`
-            w-full
-            flex
-            items-center
+            w-full flex items-center
             ${collapsed ? "justify-center" : "gap-3"}
-            px-3
-            py-2.5
-            rounded-lg
-            text-gray-400
-            hover:text-white
-            hover:bg-emerald-950/30
-            transition-colors
-            text-left
+            px-3 py-2.5 rounded-lg
+            text-[var(--text-secondary)]
+            hover:text-[var(--text-primary)]
+            hover:bg-[var(--hover-surface)]
+            transition-colors text-left
           `}
         >
           <LogOut className="w-4 h-4 shrink-0" />
-
-          {!collapsed && (
-            <span className="text-xs font-medium">
-              Sign Out
-            </span>
-          )}
+          {!collapsed && <span className="text-xs font-medium">Sign Out</span>}
         </button>
       </div>
     </aside>
