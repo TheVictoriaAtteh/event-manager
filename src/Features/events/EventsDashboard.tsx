@@ -83,37 +83,38 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
         }`}
       >
         <div className="space-y-6">
-          {/* Top Bar: Brand + Collapse Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="h-10 w-10 min-w-[2.5rem] rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          {/* Top Bar Header & Controls */}
+          <div className="flex flex-col gap-3">
+            {/* Collapse Toggle Button Row */}
+            <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-end'}`}>
+              <button
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                className="p-1.5 rounded-lg text-emerald-300/70 hover:text-white hover:bg-emerald-900/40 transition-colors border border-emerald-800/40"
+                title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              >
+                <svg
+                  className={`w-4 h-4 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                 </svg>
+              </button>
+            </div>
+
+            {/* Brand Logo & Title */}
+            <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-1'}`}>
+              <div className="h-10 w-10 min-w-[2.5rem] rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
+                G
               </div>
               {!isSidebarCollapsed && (
                 <div className="whitespace-nowrap transition-opacity duration-200">
-                  <h1 className="font-bold text-lg text-white leading-none">Event Manager</h1>
+                  <h1 className="font-bold text-lg text-white leading-none">Gatepass</h1>
                   <span className="text-xs text-emerald-400 font-medium capitalize">{userRole} Console</span>
                 </div>
               )}
             </div>
-
-            {/* Collapse Toggle Button */}
-            <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="p-1.5 rounded-lg text-emerald-300/70 hover:text-white hover:bg-emerald-900/40 transition-colors"
-              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              <svg
-                className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              </svg>
-            </button>
           </div>
 
           {/* Navigation Menu */}
@@ -283,7 +284,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             </div>
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
           </div>
