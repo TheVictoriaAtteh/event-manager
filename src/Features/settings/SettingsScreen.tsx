@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { ArrowLeft, LogOut, User, Lock, Bell, Palette } from "lucide-react";
+import {
+  ArrowLeft,
+  LogOut,
+  User,
+  Lock,
+  Bell,
+  Palette,
+} from "lucide-react";
 
 import SettingsProfile from "./SettingsProfile";
 import SettingsSecurity from "./SettingsSecurity";
@@ -40,10 +47,19 @@ export default function SettingsScreen({
   return (
     <div className="bg-dot-grid min-h-screen text-[var(--text-primary)]">
       <main className="max-w-5xl mx-auto px-6 py-8 sm:px-10">
+
+        {/* TOP BAR */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+            className="
+              flex items-center gap-2
+              text-sm
+              text-[var(--text-secondary)]
+              hover:text-[var(--text-primary)]
+              transition
+              cursor-pointer
+            "
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
@@ -52,10 +68,18 @@ export default function SettingsScreen({
           <button
             onClick={onLogout}
             className="
-              flex items-center gap-2 px-4 py-2 rounded-lg
-              bg-emerald-600 hover:bg-emerald-500
-              text-emerald-950 text-sm font-semibold
-              transition-colors shadow-lg shadow-emerald-900/20
+              flex items-center gap-2
+              px-4 py-2
+              rounded-lg
+              bg-emerald-600
+              hover:bg-emerald-500
+              text-emerald-950
+              text-sm
+              font-semibold
+              transition-colors
+              shadow-lg
+              shadow-emerald-900/20
+              cursor-pointer
             "
           >
             <LogOut className="w-4 h-4" />
@@ -63,17 +87,25 @@ export default function SettingsScreen({
           </button>
         </div>
 
+        {/* PAGE HEADER */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-emerald-500">Settings</h1>
+          <h1 className="text-2xl font-bold text-emerald-500">
+            Settings
+          </h1>
+
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             Manage your account and application preferences.
           </p>
         </div>
 
+        {/* SETTINGS CONTENT */}
         <div className="flex gap-6 items-start">
+
+          {/* MINI NAVIGATION */}
           <aside
             className="
-              w-[220px] shrink-0
+              w-[220px]
+              shrink-0
               bg-[var(--bg-surface)]
               border border-[var(--border-subtle)]
               rounded-xl
@@ -90,13 +122,35 @@ export default function SettingsScreen({
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
                     className={`
-                      w-full flex items-center gap-3
-                      px-3 py-2.5 rounded-lg text-left
-                      transition-colors text-sm font-medium
+                      w-full
+                      flex
+                      items-center
+                      gap-3
+                      px-3
+                      py-2.5
+                      rounded-lg
+                      text-left
+                      text-sm
+                      font-medium
+                      transition-all
+                      cursor-pointer
+
                       ${
                         isActive
-                          ? "bg-emerald-950/70 border border-emerald-800/50 text-emerald-400"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-emerald-950/20 border border-transparent"
+                          ? `
+                            bg-emerald-500/10
+                            border border-emerald-500/30
+                            text-emerald-600
+                            [html[data-theme="dark"]_&]:bg-emerald-950/70
+                            [html[data-theme="dark"]_&]:border-emerald-800/50
+                            [html[data-theme="dark"]_&]:text-emerald-400
+                          `
+                          : `
+                            text-[var(--text-secondary)]
+                            border border-transparent
+                            hover:text-[var(--text-primary)]
+                            hover:bg-emerald-500/5
+                          `
                       }
                     `}
                   >
@@ -108,6 +162,7 @@ export default function SettingsScreen({
             </nav>
           </aside>
 
+          {/* SETTINGS PANEL */}
           <section
             className="
               flex-1
@@ -118,9 +173,16 @@ export default function SettingsScreen({
             "
           >
             {activeSection === "profile" && <SettingsProfile />}
+
             {activeSection === "security" && <SettingsSecurity />}
-            {activeSection === "notifications" && <SettingsNotifications />}
-            {activeSection === "appearance" && <SettingsAppearance />}
+
+            {activeSection === "notifications" && (
+              <SettingsNotifications />
+            )}
+
+            {activeSection === "appearance" && (
+              <SettingsAppearance />
+            )}
           </section>
         </div>
 

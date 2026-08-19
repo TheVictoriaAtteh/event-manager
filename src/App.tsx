@@ -17,6 +17,9 @@ import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
 import BoothsScreen from "./Features/booths/BoothsScreen";
+import CheckInScreen from "./Features/check-in/CheckInScreen";
+import CheckInLogScreen from "./Features/check-in/CheckInLogScreen";
+import HelpScreen from "./Features/help/HelpScreen";
 
 type Screen =
   | "landing"
@@ -157,6 +160,24 @@ export default function App() {
         {/* BOOTHS */}
 {currentScreen === "booths" && (
   <BoothsScreen
+    onBack={() => setCurrentScreen("dashboard")}
+  />
+)}
+{/* CHECK-IN */}
+{currentScreen === "check-in" && (
+  <CheckInScreen
+    onBack={() => setCurrentScreen("dashboard")}
+  />
+)}
+{/* CHECK-IN LOG */}
+{currentScreen === "check-in-log" && (
+  <CheckInLogScreen
+    onBack={() => setCurrentScreen("dashboard")}
+  />
+)}
+{/* HELP */}
+{currentScreen === "help" && (
+  <HelpScreen
     onBack={() => setCurrentScreen("dashboard")}
   />
 )}
