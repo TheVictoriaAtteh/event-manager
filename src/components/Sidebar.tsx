@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { UserRole } from "../Features/auth/types";
 import {
   CalendarDays,
   Users,
@@ -12,10 +13,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
-  ChevronRight,
 } from "lucide-react";
 
 interface SidebarProps {
+  userRole: UserRole;
   collapsed?: boolean;
   onToggle?: () => void;
   activeScreen?: string;
@@ -24,6 +25,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
+  userRole,
   collapsed = false,
   onToggle,
   activeScreen = "dashboard",
@@ -34,23 +36,87 @@ const Sidebar: React.FC<SidebarProps> = ({
     activeScreen.startsWith("settings")
   );
 
-  const menuItems = [
-    { id: "dashboard", label: "Events Dashboard", icon: CalendarDays },
-    { id: "attendees", label: "Attendees List", icon: Users },
-    { id: "rooms", label: "Rooms", icon: Building2 },
-    { id: "booths", label: "Teams / Booths", icon: Tent },
-    { id: "check-in", label: "Check-In", icon: ScanLine },
-    { id: "check-in-log", label: "Check-In Log", icon: ClipboardList },
+  /*
+   * ADMIN MENU
+   */
+  const adminMenuItems = [
+    {
+      id: "dashboard",
+      label: "Events Dashboard",
+      icon: CalendarDays,
+    },
+    {
+      id: "attendees",
+      label: "Attendees List",
+      icon: Users,
+    },
+    {
+      id: "rooms",
+      label: "Rooms",
+      icon: Building2,
+    },
+    {
+      id: "booths",
+      label: "Teams / Booths",
+      icon: Tent,
+    },
+    {
+      id: "check-in",
+      label: "Check-In",
+      icon: ScanLine,
+    },
+    {
+      id: "check-in-log",
+      label: "Check-In Log",
+      icon: ClipboardList,
+    },
   ];
 
+  /*
+   * ATTENDEE MENU
+   */
+  const attendeeMenuItems = [
+    {
+      id: "dashboard",
+      label: "My Events",
+      icon: CalendarDays,
+    },
+    {
+      id: "check-in",
+      label: "Check-In",
+      icon: ScanLine,
+    },
+  ];
+
+  const menuItems =
+    userRole === "ADMIN"
+      ? adminMenuItems
+      : attendeeMenuItems;
+
+  /*
+   * SETTINGS
+   */
   const settingsItems = [
-    { id: "settings-profile", label: "Profile" },
-    { id: "settings-security", label: "Security" },
-    { id: "settings-notifications", label: "Notifications" },
-    { id: "settings-appearance", label: "Appearance" },
+    {
+      id: "settings-profile",
+      label: "Profile",
+    },
+    {
+      id: "settings-security",
+      label: "Security",
+    },
+    {
+      id: "settings-notifications",
+      label: "Notifications",
+    },
+    {
+      id: "settings-appearance",
+      label: "Appearance",
+    },
   ];
 
-  const settingsIsActive = activeScreen.startsWith("settings");
+  const settingsIsActive =
+    activeScreen.startsWith("settings");
 
   return (
     <aside
@@ -64,11 +130,36 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${collapsed ? "w-20" : "w-[250px]"}
       `}
     >
-      {/* ==================== BRAND ==================== */}
+      {/* ================================================= */}
+      {/* BRAND */}
+      {/* ================================================= */}
+
       <div className="px-6 pt-7 pb-5">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <div className="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-default)] flex items-center justify-center shrink-0">
-            <CalendarDays className="w-5 h-5 text-[var(--text-accent)]" />
+        <div
+          className={`flex items-center ${
+            collapsed
+              ? "justify-center"
+              : "gap-3"
+          }`}
+        >
+          <div
+            className="
+              w-10
+              h-10
+              rounded-xl
+              bg-[var(--bg-surface)]
+              border
+              border-[var(--border-default)]
+              flex
+              items-center
+              justify-center
+              shrink-0
+            "
+          >
+            <CalendarDays
+              className="w-5 h-5 text-[var(--text-accent)]"
+              strokeWidth={1.8}
+            />
           </div>
 
           {!collapsed && (
@@ -76,21 +167,37 @@ const Sidebar: React.FC<SidebarProps> = ({
               <h1 className="text-sm font-bold text-[var(--text-heading)]">
                 Event Manager
               </h1>
+
               <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
-                Admin Console
+                {userRole === "ADMIN"
+                  ? "Admin Console"
+                  : "Attendee Portal"}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* ==================== COLLAPSE BUTTON ==================== */}
-      <div className={`px-4 pb-4 ${collapsed ? "px-3" : ""}`}>
+      {/* ================================================= */}
+      {/* COLLAPSE */}
+      {/* ================================================= */}
+
+      <div className="px-4 pb-4">
         <button
+          type="button"
           onClick={onToggle}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={
+            collapsed
+              ? "Expand sidebar"
+              : "Collapse sidebar"
+          }
           className="
-            w-full flex items-center justify-center py-2 rounded-lg
+            w-full
+            h-9
+            flex
+            items-center
+            justify-center
+            rounded-lg
             text-[var(--text-muted)]
             hover:text-[var(--text-accent)]
             hover:bg-[var(--hover-surface)]
@@ -98,28 +205,56 @@ const Sidebar: React.FC<SidebarProps> = ({
           "
         >
           {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4" />
+            <PanelLeftOpen
+              className="w-4 h-4"
+              strokeWidth={1.8}
+            />
           ) : (
-            <PanelLeftClose className="w-4 h-4" />
+            <PanelLeftClose
+              className="w-4 h-4"
+              strokeWidth={1.8}
+            />
           )}
         </button>
       </div>
 
-      {/* ==================== MAIN NAVIGATION ==================== */}
+      {/* ================================================= */}
+      {/* MAIN NAVIGATION */}
+      {/* ================================================= */}
+
       <nav className="px-4 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeScreen === item.id;
+          const isActive =
+            activeScreen === item.id;
 
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate?.(item.id)}
-              title={collapsed ? item.label : undefined}
+              type="button"
+              onClick={() =>
+                onNavigate?.(item.id)
+              }
+              title={
+                collapsed
+                  ? item.label
+                  : undefined
+              }
               className={`
-                w-full flex items-center
-                ${collapsed ? "justify-center" : "gap-3"}
-                px-3 py-2.5 rounded-lg text-left transition-colors
+                w-full
+                h-10
+                flex
+                items-center
+                ${
+                  collapsed
+                    ? "justify-center"
+                    : "gap-3"
+                }
+                px-3
+                rounded-lg
+                text-left
+                transition-colors
+
                 ${
                   isActive
                     ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
@@ -127,25 +262,57 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
               `}
             >
-              <Icon className="w-4 h-4 shrink-0" />
-              {!collapsed && <span className="text-xs font-medium">{item.label}</span>}
+              <Icon
+                className="w-4 h-4 shrink-0"
+                strokeWidth={1.8}
+              />
+
+              {!collapsed && (
+                <span className="text-xs font-medium">
+                  {item.label}
+                </span>
+              )}
             </button>
           );
         })}
       </nav>
 
-      {/* ==================== SPACER ==================== */}
+      {/* ================================================= */}
+      {/* SPACER */}
+      {/* ================================================= */}
+
       <div className="flex-1" />
 
-      {/* ==================== HELP ==================== */}
-      <nav className="px-4 pb-2">
+      {/* ================================================= */}
+      {/* HELP */}
+      {/* ================================================= */}
+
+      <div className="px-4 pb-2">
         <button
-          onClick={() => onNavigate?.("help")}
-          title={collapsed ? "Help" : undefined}
+          type="button"
+          onClick={() =>
+            onNavigate?.("help")
+          }
+          title={
+            collapsed
+              ? "Help"
+              : undefined
+          }
           className={`
-            w-full flex items-center
-            ${collapsed ? "justify-center" : "gap-3"}
-            px-3 py-2.5 rounded-lg text-left transition-colors
+            w-full
+            h-10
+            flex
+            items-center
+            ${
+              collapsed
+                ? "justify-center"
+                : "gap-3"
+            }
+            px-3
+            rounded-lg
+            text-left
+            transition-colors
+
             ${
               activeScreen === "help"
                 ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
@@ -153,90 +320,205 @@ const Sidebar: React.FC<SidebarProps> = ({
             }
           `}
         >
-          <CircleHelp className="w-4 h-4 shrink-0" />
-          {!collapsed && <span className="text-xs font-medium">Help</span>}
+          <CircleHelp
+            className="w-4 h-4 shrink-0"
+            strokeWidth={1.8}
+          />
+
+          {!collapsed && (
+            <span className="text-xs font-medium">
+              Help
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ================================================= */}
+      {/* SETTINGS */}
+      {/* ================================================= */}
+
+      <div className="px-4 pb-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (collapsed) {
+              onNavigate?.(
+                "settings-profile"
+              );
+            } else {
+              setSettingsOpen(
+                (previous) => !previous
+              );
+            }
+          }}
+          title={
+            collapsed
+              ? "Settings"
+              : undefined
+          }
+          className={`
+            w-full
+            h-10
+            flex
+            items-center
+            ${
+              collapsed
+                ? "justify-center"
+                : ""
+            }
+            px-3
+            rounded-lg
+            text-left
+            transition-colors
+
+            ${
+              settingsIsActive
+                ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+            }
+          `}
+        >
+          {/* SETTINGS ICON */}
+
+          <Settings
+            className="w-4 h-4 shrink-0"
+            strokeWidth={1.8}
+          />
+
+          {/* SETTINGS LABEL */}
+
+          {!collapsed && (
+            <span className="text-xs font-medium ml-3">
+              Settings
+            </span>
+          )}
+
+          {/* DROPDOWN ARROW */}
+
+          {!collapsed && (
+            <ChevronDown
+              className={`
+                w-4 h-4
+                ml-auto
+                shrink-0
+                transition-transform
+                duration-200
+                ${
+                  settingsOpen
+                    ? "rotate-180"
+                    : ""
+                }
+              `}
+              strokeWidth={1.8}
+            />
+          )}
         </button>
 
-        {/* ==================== SETTINGS ==================== */}
-        <div className="mt-1">
-          <button
-            onClick={() => {
-              if (collapsed) {
-                onNavigate?.("settings-profile");
-              } else {
-                setSettingsOpen(!settingsOpen);
-              }
-            }}
-            title={collapsed ? "Settings" : undefined}
-            className={`
-              w-full flex items-center
-              ${collapsed ? "justify-center" : "gap-3"}
-              px-3 py-2.5 rounded-lg text-left transition-colors
-              ${
-                settingsIsActive
-                  ? "bg-[var(--nav-active-bg)] border border-[var(--nav-active-border)] text-[var(--nav-active-text)]"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
-              }
-            `}
-          >
-            <Settings className="w-4 h-4 shrink-0" />
-            {!collapsed && (
-              <>
-                <span className="text-xs font-medium flex-1">Settings</span>
-                {settingsOpen ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
-              </>
-            )}
-          </button>
+        {/* ================================================= */}
+        {/* SETTINGS OPTIONS */}
+        {/* ================================================= */}
 
-          {/* ==================== SETTINGS DROPDOWN ==================== */}
-          {!collapsed && settingsOpen && (
-            <div className="ml-8 mt-1 pl-3 border-l border-[var(--border-default)] space-y-1">
-              {settingsItems.map((item) => {
-                const isActive = activeScreen === item.id;
+        {!collapsed &&
+          settingsOpen && (
+            <div
+              className="
+                ml-5
+                mt-1
+                pl-4
+                border-l
+                border-[var(--border-default)]
+                space-y-1
+              "
+            >
+              {settingsItems.map(
+                (item) => {
+                  const isActive =
+                    activeScreen ===
+                    item.id;
 
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onNavigate?.(item.id)}
-                    className={`
-                      w-full text-left px-3 py-2 rounded-md text-xs transition-colors
-                      ${
-                        isActive
-                          ? "text-[var(--nav-active-text)] bg-[var(--nav-active-bg)]"
-                          : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() =>
+                        onNavigate?.(
+                          item.id
+                        )
                       }
-                    `}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+                      className={`
+                        w-full
+                        h-8
+                        px-3
+                        rounded-md
+                        text-left
+                        text-xs
+                        transition-colors
+
+                        ${
+                          isActive
+                            ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
+                            : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
+                        }
+                      `}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                }
+              )}
             </div>
           )}
-        </div>
-      </nav>
+      </div>
 
-      {/* ==================== SIGN OUT ==================== */}
-      <div className="border-t border-[var(--border-subtle)] px-4 py-4">
+      {/* ================================================= */}
+      {/* SIGN OUT */}
+      {/* ================================================= */}
+
+      <div
+        className="
+          border-t
+          border-[var(--border-subtle)]
+          px-4
+          py-4
+        "
+      >
         <button
+          type="button"
           onClick={onLogout}
-          title={collapsed ? "Sign Out" : undefined}
+          title={
+            collapsed
+              ? "Sign Out"
+              : undefined
+          }
           className={`
-            w-full flex items-center
-            ${collapsed ? "justify-center" : "gap-3"}
-            px-3 py-2.5 rounded-lg
+            w-full
+            h-10
+            flex
+            items-center
+            ${
+              collapsed
+                ? "justify-center"
+                : "gap-3"
+            }
+            px-3
+            rounded-lg
             text-[var(--text-secondary)]
             hover:text-[var(--text-primary)]
             hover:bg-[var(--hover-surface)]
-            transition-colors text-left
+            transition-colors
+            text-left
           `}
         >
-          <LogOut className="w-4 h-4 shrink-0" />
-          {!collapsed && <span className="text-xs font-medium">Sign Out</span>}
+          <LogOut
+            className="w-4 h-4 shrink-0"
+            strokeWidth={1.8}
+          />
+
+          {!collapsed && (
+            <span className="text-xs font-medium">
+              Sign Out
+            </span>
+          )}
         </button>
       </div>
     </aside>

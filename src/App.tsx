@@ -20,6 +20,10 @@ import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
 import BoothsScreen from "./Features/booths/BoothsScreen";
 
+import CheckInScreen from "./Features/check-in/CheckInScreen";
+import CheckInLogScreen from "./Features/check-in/CheckInLogScreen";
+import HelpScreen from "./Features/help/HelpScreen";
+
 type Screen =
   | "landing"
   | "signup"
@@ -45,6 +49,10 @@ type Screen =
   | "settings-appearance"
   | "help";
 
+/* ========================================================= */
+/* SETTINGS NAVIGATION */
+/* ========================================================= */
+
 const SETTINGS_SCREEN_TO_SECTION: Partial<
   Record<Screen, SettingsSectionId>
 > = {
@@ -55,6 +63,23 @@ const SETTINGS_SCREEN_TO_SECTION: Partial<
   "settings-appearance": "appearance",
 };
 
+/* ========================================================= */
+/* ADMIN-ONLY SCREENS */
+/* ========================================================= */
+
+const ADMIN_ONLY_SCREENS: Screen[] = [
+  "attendees",
+  "rooms",
+  "add-room",
+  "booths",
+  "room-assignment",
+  "check-in-log",
+];
+
+/* ========================================================= */
+/* APP */
+/* ========================================================= */
+
 export default function App() {
   const [currentScreen, setCurrentScreen] =
     useState<Screen>("landing");
@@ -62,16 +87,45 @@ export default function App() {
   const [userRole, setUserRole] =
     useState<UserRole>("ATTENDEE");
 
-  // Controls the Create Event modal independently
-  // from the current screen.
+  /*
+   * Create Event is a modal, not a separate screen.
+   */
   const [showCreateEvent, setShowCreateEvent] =
     useState(false);
+
+  /* ======================================================= */
+  /* ROLE-AWARE NAVIGATION */
+  /* ======================================================= */
+
+  const handleNavigate = (screen: Screen) => {
+    /*
+     * If an attendee tries to access an admin-only screen,
+     * simply keep them on the dashboard.
+     */
+    if (
+      userRole !== "ADMIN" &&
+      ADMIN_ONLY_SCREENS.includes(screen)
+    ) {
+      setCurrentScreen("dashboard");
+      return;
+    }
+
+    setCurrentScreen(screen);
+  };
+
+  /* ======================================================= */
+  /* LOGOUT */
+  /* ======================================================= */
 
   const handleLogout = () => {
     setUserRole("ATTENDEE");
     setShowCreateEvent(false);
     setCurrentScreen("landing");
   };
+
+  /* ======================================================= */
+  /* SETTINGS */
+  /* ======================================================= */
 
   const isSettingsScreen =
     currentScreen in SETTINGS_SCREEN_TO_SECTION;
@@ -85,9 +139,15 @@ export default function App() {
 
         {currentScreen === "landing" && (
           <LandingPage
-            onSignIn={() => setCurrentScreen("login")}
-            onCreateEvent={() => setCurrentScreen("signup")}
-            onDoorStaff={() => setCurrentScreen("login")}
+            onSignIn={() =>
+              setCurrentScreen("login")
+            }
+            onCreateEvent={() =>
+              setCurrentScreen("signup")
+            }
+            onDoorStaff={() =>
+              setCurrentScreen("login")
+            }
           />
         )}
 
@@ -119,9 +179,14 @@ export default function App() {
             onNavigateToLogin={() =>
               setCurrentScreen("login")
             }
-            onSignUpSuccess={() =>
-              setCurrentScreen("dashboard")
-            }
+            onSignUpSuccess={() => {
+              /*
+               * Newly registered users are attendees
+               * for now.
+               */
+              setUserRole("ATTENDEE");
+              setCurrentScreen("dashboard");
+            }}
           />
         )}
 
@@ -148,24 +213,35 @@ export default function App() {
               onLogout={handleLogout}
 
               /*
-               * Create Event is now a modal,
-               * so we DON'T change currentScreen.
+               * ADMIN ONLY:
+               * Create Event opens the modal.
                */
-              onCreateEvent={() =>
-                setShowCreateEvent(true)
-              }
+              onCreateEvent={() => {
+                if (userRole === "ADMIN") {
+                  setShowCreateEvent(true);
+                }
+              }}
 
               onSelectEvent={(id: string) => {
                 console.log("Selected event:", id);
-                setCurrentScreen("event-details");
+
+                handleNavigate("event-details");
               }}
 
-              onNavigateToAttendees={() =>
-                setCurrentScreen("attendees")
-              }
+              /*
+               * Kept for compatibility with
+               * your existing EventsDashboard.
+               */
+              onNavigateToAttendees={() => {
+                handleNavigate("attendees");
+              }}
 
+              /*
+               * All dashboard/sidebar navigation
+               * goes through the role-aware handler.
+               */
               onNavigate={(screen: string) => {
-                setCurrentScreen(screen as Screen);
+                handleNavigate(screen as Screen);
               }}
             />
 
@@ -173,16 +249,17 @@ export default function App() {
             {/* CREATE EVENT MODAL */}
             {/* ================================================= */}
 
-            {showCreateEvent && (
-              <CreateEventScreen
-                onBack={() =>
-                  setShowCreateEvent(false)
-                }
-                onSubmitSuccess={() =>
-                  setShowCreateEvent(false)
-                }
-              />
-            )}
+            {showCreateEvent &&
+              userRole === "ADMIN" && (
+                <CreateEventScreen
+                  onBack={() =>
+                    setShowCreateEvent(false)
+                  }
+                  onSubmitSuccess={() =>
+                    setShowCreateEvent(false)
+                  }
+                />
+              )}
           </>
         )}
 
@@ -199,11 +276,55 @@ export default function App() {
         )}
 
         {/* ================================================= */}
-        {/* ATTENDEES */}
+        {/* ATTENDEES - ADMIN ONLY */}
         {/* ================================================= */}
 
-        {currentScreen === "attendees" && (
-          <AttendeesListScreen
+        {currentScreen === "attendees" &&
+          userRole === "ADMIN" && (
+            <AttendeesListScreen
+              onBack={() =>
+                setCurrentScreen("dashboard")
+              }
+            />
+          )}
+
+        {/* ================================================= */}
+        {/* ROOMS - ADMIN ONLY */}
+        {/* ================================================= */}
+
+        {currentScreen === "rooms" &&
+          userRole === "ADMIN" && (
+            <RoomsScreen
+              onNavigate={(screen) => {
+                handleNavigate(
+                  screen as Screen
+                );
+              }}
+              onAddRoom={() => {
+                handleNavigate("add-room");
+              }}
+            />
+          )}
+
+        {/* ================================================= */}
+        {/* BOOTHS - ADMIN ONLY */}
+        {/* ================================================= */}
+
+        {currentScreen === "booths" &&
+          userRole === "ADMIN" && (
+            <BoothsScreen
+              onBack={() =>
+                setCurrentScreen("dashboard")
+              }
+            />
+          )}
+
+        {/* ================================================= */}
+        {/* CHECK-IN */}
+        {/* ================================================= */}
+
+        {currentScreen === "check-in" && (
+          <CheckInScreen
             onBack={() =>
               setCurrentScreen("dashboard")
             }
@@ -211,31 +332,17 @@ export default function App() {
         )}
 
         {/* ================================================= */}
-        {/* ROOMS */}
+        {/* CHECK-IN LOG - ADMIN ONLY */}
         {/* ================================================= */}
 
-        {currentScreen === "rooms" && (
-          <RoomsScreen
-            onNavigate={(screen) => {
-              setCurrentScreen(screen as Screen);
-            }}
-            onAddRoom={() => {
-              setCurrentScreen("add-room");
-            }}
-          />
-        )}
-
-        {/* ================================================= */}
-        {/* BOOTHS */}
-        {/* ================================================= */}
-
-        {currentScreen === "booths" && (
-          <BoothsScreen
-            onBack={() =>
-              setCurrentScreen("dashboard")
-            }
-          />
-        )}
+        {currentScreen === "check-in-log" &&
+          userRole === "ADMIN" && (
+            <CheckInLogScreen
+              onBack={() =>
+                setCurrentScreen("dashboard")
+              }
+            />
+          )}
 
         {/* ================================================= */}
         {/* SETTINGS */}
@@ -245,12 +352,26 @@ export default function App() {
           <SettingsScreen
             key={currentScreen}
             initialSection={
-              SETTINGS_SCREEN_TO_SECTION[currentScreen]
+              SETTINGS_SCREEN_TO_SECTION[
+                currentScreen
+              ]
             }
             onBack={() =>
               setCurrentScreen("dashboard")
             }
             onLogout={handleLogout}
+          />
+        )}
+
+        {/* ================================================= */}
+        {/* HELP */}
+        {/* ================================================= */}
+
+        {currentScreen === "help" && (
+          <HelpScreen
+            onBack={() =>
+              setCurrentScreen("dashboard")
+            }
           />
         )}
       </>
