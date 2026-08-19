@@ -30,6 +30,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [privateCode, setPrivateCode] = useState('');
   const [codeSuccessMsg, setCodeSuccessMsg] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const mockEvents: EventItem[] = [
     {
@@ -75,116 +76,167 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ORIGINAL SIDEBAR IMPLEMENTATION */}
-      <aside className="w-64 bg-[#12241D]/90 backdrop-blur-xl border-r border-emerald-800/40 p-6 flex flex-col justify-between hidden md:flex z-10">
+      {/* COLLAPSIBLE SIDEBAR */}
+      <aside
+        className={`bg-[#12241D]/90 backdrop-blur-xl border-r border-emerald-800/40 p-4 flex flex-col justify-between hidden md:flex z-20 transition-all duration-300 relative ${
+          isSidebarCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
         <div className="space-y-6">
-          {/* Header & Logo */}
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          {/* Top Bar: Brand + Collapse Toggle */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="h-10 w-10 min-w-[2.5rem] rounded-xl bg-emerald-500 flex items-center justify-center text-[#0B1914] font-extrabold text-xl shadow-lg shadow-emerald-500/20">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              {!isSidebarCollapsed && (
+                <div className="whitespace-nowrap transition-opacity duration-200">
+                  <h1 className="font-bold text-lg text-white leading-none">Event Manager</h1>
+                  <span className="text-xs text-emerald-400 font-medium capitalize">{userRole} Console</span>
+                </div>
+              )}
+            </div>
+
+            {/* Collapse Toggle Button */}
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="p-1.5 rounded-lg text-emerald-300/70 hover:text-white hover:bg-emerald-900/40 transition-colors"
+              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              <svg
+                className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
               </svg>
-            </div>
-            <div>
-              <h1 className="font-bold text-lg text-white leading-none">Event Manager</h1>
-              <span className="text-xs text-emerald-400 font-medium capitalize">{userRole} Console</span>
-            </div>
+            </button>
           </div>
 
-          {/* Original Navigation Items with SVGs */}
-          <nav className="space-y-1.5 pt-4">
+          {/* Navigation Menu */}
+          <nav className="space-y-1.5 pt-2">
             <button
               onClick={() => onNavigate('dashboard')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500 text-[#0B1914] font-bold shadow-md shadow-emerald-500/10 text-sm transition-all"
+              title={isSidebarCollapsed ? 'Events Dashboard' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-emerald-500 text-[#0B1914] font-bold shadow-md shadow-emerald-500/10 text-sm transition-all ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
-              Events Dashboard
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Events Dashboard</span>}
             </button>
 
             <button
               onClick={onNavigateToAttendees}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Attendees List' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-              Attendees List
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Attendees List</span>}
             </button>
 
             <button
               onClick={() => onNavigate('rooms')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Rooms' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-              Rooms
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Rooms</span>}
             </button>
 
             <button
               onClick={() => onNavigate('teams')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Teams / Booths' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Teams / Booths
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Teams / Booths</span>}
             </button>
 
             <button
               onClick={() => onNavigate('check-in')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Check-In' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
-              Check-In
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Check-In</span>}
             </button>
 
             <button
               onClick={() => onNavigate('check-in-log')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Check-In Log' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012 2h2a2 2 0 012-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
-              Check-In Log
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Check-In Log</span>}
             </button>
 
             <button
               onClick={() => onNavigate('help')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Help' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Help
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Help</span>}
             </button>
 
             <button
               onClick={() => onNavigate('settings')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm"
+              title={isSidebarCollapsed ? 'Settings' : ''}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-emerald-200/70 font-medium hover:bg-emerald-900/30 hover:text-white transition-all text-sm ${
+                isSidebarCollapsed ? 'justify-center' : ''
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Settings
+              {!isSidebarCollapsed && <span className="whitespace-nowrap">Settings</span>}
             </button>
           </nav>
         </div>
 
-        {/* Sign Out Button */}
+        {/* Sign Out Action */}
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 py-3 px-4 bg-[#08120E] border border-emerald-800/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-medium transition-all text-sm mt-6"
+          title={isSidebarCollapsed ? 'Sign Out' : ''}
+          className={`w-full flex items-center gap-3 py-3 px-3.5 bg-[#08120E] border border-emerald-800/50 hover:bg-emerald-900/40 text-emerald-300 rounded-xl font-medium transition-all text-sm mt-6 ${
+            isSidebarCollapsed ? 'justify-center' : ''
+          }`}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Sign Out
+          {!isSidebarCollapsed && <span className="whitespace-nowrap">Sign Out</span>}
         </button>
       </aside>
 
