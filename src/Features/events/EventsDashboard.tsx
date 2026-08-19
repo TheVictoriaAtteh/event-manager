@@ -159,7 +159,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             </button>
 
             <button
-              onClick={() => onNavigate('teams')}
+              onClick={() => onNavigate('booths')}
               title={isSidebarCollapsed ? 'Teams / Booths' : ''}
               className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[var(--text-secondary)] font-medium hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)] transition-all text-sm ${
                 isSidebarCollapsed ? 'justify-center' : ''
