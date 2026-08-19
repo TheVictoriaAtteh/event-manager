@@ -11,15 +11,14 @@ import type { UserRole } from "./Features/auth/types";
 import SettingsScreen, {
   type SettingsSectionId,
 } from "./Features/settings/SettingsScreen";
+
 import { EventsDashboard } from "./Features/events/EventsDashboard";
 import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
 import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
+
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
 import BoothsScreen from "./Features/booths/BoothsScreen";
-import CheckInScreen from "./Features/check-in/CheckInScreen";
-import CheckInLogScreen from "./Features/check-in/CheckInLogScreen";
-import HelpScreen from "./Features/help/HelpScreen";
 
 type Screen =
   | "landing"
@@ -28,7 +27,6 @@ type Screen =
   | "forgot-password"
   | "dashboard"
   | "event-details"
-  | "create-event"
   | "attendees"
   | "add-attendee"
   | "upload-attendees"
@@ -47,9 +45,9 @@ type Screen =
   | "settings-appearance"
   | "help";
 
-// Maps each settings-prefixed screen id to the section SettingsScreen should open on.
-// "settings" (no suffix) falls back to "profile".
-const SETTINGS_SCREEN_TO_SECTION: Partial<Record<Screen, SettingsSectionId>> = {
+const SETTINGS_SCREEN_TO_SECTION: Partial<
+  Record<Screen, SettingsSectionId>
+> = {
   settings: "profile",
   "settings-profile": "profile",
   "settings-security": "security",
@@ -58,20 +56,33 @@ const SETTINGS_SCREEN_TO_SECTION: Partial<Record<Screen, SettingsSectionId>> = {
 };
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("landing");
-  const [userRole, setUserRole] = useState<UserRole>("ATTENDEE");
+  const [currentScreen, setCurrentScreen] =
+    useState<Screen>("landing");
+
+  const [userRole, setUserRole] =
+    useState<UserRole>("ATTENDEE");
+
+  // Controls the Create Event modal independently
+  // from the current screen.
+  const [showCreateEvent, setShowCreateEvent] =
+    useState(false);
 
   const handleLogout = () => {
     setUserRole("ATTENDEE");
+    setShowCreateEvent(false);
     setCurrentScreen("landing");
   };
 
-  const isSettingsScreen = currentScreen in SETTINGS_SCREEN_TO_SECTION;
+  const isSettingsScreen =
+    currentScreen in SETTINGS_SCREEN_TO_SECTION;
 
   return (
     <ThemeProvider>
       <>
+        {/* ================================================= */}
         {/* LANDING */}
+        {/* ================================================= */}
+
         {currentScreen === "landing" && (
           <LandingPage
             onSignIn={() => setCurrentScreen("login")}
@@ -80,11 +91,18 @@ export default function App() {
           />
         )}
 
+        {/* ================================================= */}
         {/* LOGIN */}
+        {/* ================================================= */}
+
         {currentScreen === "login" && (
           <LoginScreen
-            onNavigateToSignUp={() => setCurrentScreen("signup")}
-            onNavigateToForgotPassword={() => setCurrentScreen("forgot-password")}
+            onNavigateToSignUp={() =>
+              setCurrentScreen("signup")
+            }
+            onNavigateToForgotPassword={() =>
+              setCurrentScreen("forgot-password")
+            }
             onLoginSuccess={(role: UserRole) => {
               setUserRole(role);
               setCurrentScreen("dashboard");
@@ -92,61 +110,110 @@ export default function App() {
           />
         )}
 
+        {/* ================================================= */}
         {/* SIGN UP */}
+        {/* ================================================= */}
+
         {currentScreen === "signup" && (
           <SignUpScreen
-            onNavigateToLogin={() => setCurrentScreen("login")}
-            onSignUpSuccess={() => setCurrentScreen("dashboard")}
+            onNavigateToLogin={() =>
+              setCurrentScreen("login")
+            }
+            onSignUpSuccess={() =>
+              setCurrentScreen("dashboard")
+            }
           />
         )}
 
+        {/* ================================================= */}
         {/* FORGOT PASSWORD */}
+        {/* ================================================= */}
+
         {currentScreen === "forgot-password" && (
           <ForgotPasswordScreen
-            onNavigateToLogin={() => setCurrentScreen("login")}
+            onNavigateToLogin={() =>
+              setCurrentScreen("login")
+            }
           />
         )}
 
+        {/* ================================================= */}
         {/* DASHBOARD */}
+        {/* ================================================= */}
+
         {currentScreen === "dashboard" && (
-          <EventsDashboard
-            userRole={userRole}
-            onLogout={handleLogout}
-            onCreateEvent={() => setCurrentScreen("create-event")}
-            onSelectEvent={(id: string) => {
-              console.log("Selected event:", id);
-              setCurrentScreen("event-details");
-            }}
-            onNavigateToAttendees={() => setCurrentScreen("attendees")}
-            onNavigate={(screen: string) => {
-              setCurrentScreen(screen as Screen);
-            }}
-          />
+          <>
+            <EventsDashboard
+              userRole={userRole}
+              onLogout={handleLogout}
+
+              /*
+               * Create Event is now a modal,
+               * so we DON'T change currentScreen.
+               */
+              onCreateEvent={() =>
+                setShowCreateEvent(true)
+              }
+
+              onSelectEvent={(id: string) => {
+                console.log("Selected event:", id);
+                setCurrentScreen("event-details");
+              }}
+
+              onNavigateToAttendees={() =>
+                setCurrentScreen("attendees")
+              }
+
+              onNavigate={(screen: string) => {
+                setCurrentScreen(screen as Screen);
+              }}
+            />
+
+            {/* ================================================= */}
+            {/* CREATE EVENT MODAL */}
+            {/* ================================================= */}
+
+            {showCreateEvent && (
+              <CreateEventScreen
+                onBack={() =>
+                  setShowCreateEvent(false)
+                }
+                onSubmitSuccess={() =>
+                  setShowCreateEvent(false)
+                }
+              />
+            )}
+          </>
         )}
 
+        {/* ================================================= */}
         {/* EVENT DETAILS */}
+        {/* ================================================= */}
+
         {currentScreen === "event-details" && (
           <EventDetailsScreen
-            onBack={() => setCurrentScreen("dashboard")}
+            onBack={() =>
+              setCurrentScreen("dashboard")
+            }
           />
         )}
 
-        {/* CREATE EVENT */}
-        {currentScreen === "create-event" && (
-          <CreateEventScreen
-            onBack={() => setCurrentScreen("dashboard")}
-            onSubmitSuccess={() => setCurrentScreen("dashboard")}
-          />
-        )}
-
+        {/* ================================================= */}
         {/* ATTENDEES */}
+        {/* ================================================= */}
+
         {currentScreen === "attendees" && (
           <AttendeesListScreen
-            onBack={() => setCurrentScreen("dashboard")}
+            onBack={() =>
+              setCurrentScreen("dashboard")
+            }
           />
         )}
 
+        {/* ================================================= */}
         {/* ROOMS */}
+        {/* ================================================= */}
+
         {currentScreen === "rooms" && (
           <RoomsScreen
             onNavigate={(screen) => {
@@ -157,37 +224,32 @@ export default function App() {
             }}
           />
         )}
-        {/* BOOTHS */}
-{currentScreen === "booths" && (
-  <BoothsScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
-{/* CHECK-IN */}
-{currentScreen === "check-in" && (
-  <CheckInScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
-{/* CHECK-IN LOG */}
-{currentScreen === "check-in-log" && (
-  <CheckInLogScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
-{/* HELP */}
-{currentScreen === "help" && (
-  <HelpScreen
-    onBack={() => setCurrentScreen("dashboard")}
-  />
-)}
 
-        {/* SETTINGS (profile / security / notifications / appearance) */}
+        {/* ================================================= */}
+        {/* BOOTHS */}
+        {/* ================================================= */}
+
+        {currentScreen === "booths" && (
+          <BoothsScreen
+            onBack={() =>
+              setCurrentScreen("dashboard")
+            }
+          />
+        )}
+
+        {/* ================================================= */}
+        {/* SETTINGS */}
+        {/* ================================================= */}
+
         {isSettingsScreen && (
           <SettingsScreen
             key={currentScreen}
-            initialSection={SETTINGS_SCREEN_TO_SECTION[currentScreen]}
-            onBack={() => setCurrentScreen("dashboard")}
+            initialSection={
+              SETTINGS_SCREEN_TO_SECTION[currentScreen]
+            }
+            onBack={() =>
+              setCurrentScreen("dashboard")
+            }
             onLogout={handleLogout}
           />
         )}
