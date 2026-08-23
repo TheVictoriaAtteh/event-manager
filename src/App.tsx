@@ -24,6 +24,7 @@ import CheckInScreen from "./Features/check-in/CheckInScreen";
 import CheckInLogScreen from "./Features/check-in/CheckInLogScreen";
 import HelpScreen from "./Features/help/HelpScreen";
 
+
 type Screen =
   | "landing"
   | "signup"
