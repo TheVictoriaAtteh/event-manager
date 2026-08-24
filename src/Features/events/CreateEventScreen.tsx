@@ -6,6 +6,7 @@ import {
   MapPin,
   Upload,
 } from "lucide-react";
+import { useEvents } from "../../context/useEvents";
 
 interface CreateEventScreenProps {
   onBack: () => void;
@@ -16,6 +17,8 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   onBack,
   onSubmitSuccess,
 }) => {
+  const { addEvent } = useEvents();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -28,15 +31,26 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Event creation logic will eventually go here
+    // Convert file to Object URL if uploaded for immediate local preview
+    const imageUrl = banner ? URL.createObjectURL(banner) : undefined;
+
+    // Dispatch event to application context
+    addEvent({
+      title,
+      description,
+      date,
+      time,
+      location,
+      category,
+      maxCapacity: capacity ? Number(capacity) : 100,
+      imageUrl,
+    });
+
     onSubmitSuccess();
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-
     if (file) {
       setBanner(file);
     }
@@ -190,6 +204,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
 
             <textarea
               rows={3}
+              required
               placeholder="Describe your event..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -299,8 +314,9 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                 />
 
                 <input
-                  type="time"
+                  type="text"
                   required
+                  placeholder="e.g. 10:00 AM"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   className="
@@ -443,6 +459,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             <input
               type="number"
               min="1"
+              required
               placeholder="e.g. 200"
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
