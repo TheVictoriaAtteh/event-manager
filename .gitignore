@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Prisma generated artifacts
+prisma/*.db
+prisma/*.db-journal
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+
+# .md files
+AUTH_INTEGRATION.md
+
+
