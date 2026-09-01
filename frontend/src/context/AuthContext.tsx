@@ -56,10 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Email confirmation disabled on the project → the backend returned a
     // session immediately; store it and treat the user as signed in.
     if (!result.emailVerificationRequired && result.accessToken && result.user) {
+      const expiresIn = result.expiresIn ?? 86400; // Default 1 day if missing
       saveTokens({
         accessToken: result.accessToken,
-        refreshToken: '',
-        expiresAt: Date.now() + 24 * 3600 * 1000,
+        refreshToken: result.refreshToken ?? '',
+        expiresAt: Date.now() + expiresIn * 1000,
       });
       const next = toUser(result.user);
       setUser(next);

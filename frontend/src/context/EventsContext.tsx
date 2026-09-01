@@ -1,69 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { EventsContext, type EventItem } from './EventsContextType';
+import { eventsApi } from '../lib/eventsApi';
+import type { Event } from '../api/interfaces/events';
 
-const STORAGE_KEY = 'gatepass_mock_events';
+/**
+ * Compute event status based on start and end times.
+ */
+function getEventStatus(startsAt: string, endsAt: string): 'UPCOMING' | 'ONGOING' | 'COMPLETED' {
+  const now = new Date();
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
 
-const INITIAL_MOCK_EVENTS: EventItem[] = [
-  {
-    id: 'evt_1',
-    title: 'Tech Summit 2026',
-    date: '2026-09-15',
-    time: '10:00 AM',
-    location: 'Main Auditorium',
-    description: 'Annual flagship technology and software convention.',
-    category: 'Conference',
-    attendeesCount: 142,
-    maxCapacity: 300,
-    status: 'UPCOMING',
-  },
-  {
-    id: 'evt_2',
-    title: 'Design Workshop',
-    date: '2026-09-20',
-    time: '02:00 PM',
-    location: 'Room 204',
-    description: 'Interactive UI/UX design masterclass with live demo.',
-    category: 'Workshop',
-    attendeesCount: 45,
-    maxCapacity: 50,
-    status: 'UPCOMING',
-  },
-];
+  if (now < start) return 'UPCOMING';
+  if (now >= start && now <= end) return 'ONGOING';
+  return 'COMPLETED';
+}
 
-export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<EventItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved events:', e);
-      }
-    }
-    return INITIAL_MOCK_EVENTS;
+/**
+ * Transform backend Event to frontend EventItem.
+ */
+function toEventItem(event: Event): EventItem {
+  // Extract time from startsAt ISO string (e.g., "2026-09-15T10:00:00Z" -> "10:00 AM")
+  const startDate = new Date(event.startsAt);
+  const timeString = startDate.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   });
 
-  const saveEvents = (updatedEvents: EventItem[]) => {
-    setEvents(updatedEvents);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
+  return {
+    id: event.id,
+    title: event.title,
+    date: event.date,
+    time: timeString,
+    location: event.location,
+    description: event.description,
+    category: 'Event', // Backend doesn't have category, using generic label
+    attendeesCount: event._count?.attendees ?? 0,
+    maxCapacity: event.capacity,
+    imageUrl: event.logoUrl ?? undefined,
+    status: getEventStatus(event.startsAt, event.endsAt),
   };
+}
 
-  const addEvent = (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => {
-    const newEvent: EventItem = {
-      ...eventData,
-      id: `evt_${Date.now()}`,
-      attendeesCount: 0,
-      status: 'UPCOMING',
+export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Load events from the backend on mount.
+   */
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const backendEvents = await eventsApi.list();
+        setEvents(backendEvents.map(toEventItem));
+      } catch (err) {
+        console.error('Failed to load events:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load events');
+      } finally {
+        setIsLoading(false);
+      }
     };
-    saveEvents([newEvent, ...events]);
-  };
 
-  const deleteEvent = (id: string) => {
-    saveEvents(events.filter((evt) => evt.id !== id));
-  };
+    void loadEvents();
+  }, []);
+
+  const addEvent = useCallback(
+    async (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => {
+      try {
+        // Transform frontend EventItem format to backend CreateEventInput
+        const createInput = {
+          title: eventData.title,
+          description: eventData.description,
+          date: eventData.date,
+          // Convert time string back to ISO datetime (combine date + time)
+          startsAt: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
+          endsAt: new Date(
+            new Date(`${eventData.date}T${eventData.time}`).getTime() + 2 * 60 * 60 * 1000,
+          ).toISOString(), // Default 2-hour duration
+          location: eventData.location,
+          capacity: eventData.maxCapacity,
+          logoUrl: eventData.imageUrl,
+        };
+
+        const newEvent = await eventsApi.create(createInput);
+        setEvents((prev) => [toEventItem(newEvent), ...prev]);
+      } catch (err) {
+        console.error('Failed to create event:', err);
+        throw err;
+      }
+    },
+    [],
+  );
+
+  const deleteEvent = useCallback(async (id: string) => {
+    try {
+      await eventsApi.remove(id);
+      setEvents((prev) => prev.filter((evt) => evt.id !== id));
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      throw err;
+    }
+  }, []);
 
   return (
-    <EventsContext.Provider value={{ events, addEvent, deleteEvent }}>
+    <EventsContext.Provider value={{ events, addEvent, deleteEvent, isLoading, error }}>
       {children}
     </EventsContext.Provider>
   );

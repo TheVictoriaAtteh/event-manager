@@ -12,6 +12,12 @@
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
   --dot-color: #34d399;
+  --text-heading: #e5e7eb;
+  --text-accent: #34d399;
+  --hover-surface: rgba(16, 185, 129, 0.1);
+  --nav-active-bg: rgba(16, 185, 129, 0.2);
+  --nav-active-border: rgba(16, 185, 129, 0.4);
+  --nav-active-text: #34d399;
 }
 
 :root[data-theme="light"] {
@@ -24,6 +30,12 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --dot-color: #10b981;
+  --text-heading: #1e293b;
+  --text-accent: #05966a;
+  --hover-surface: rgba(5, 150, 104, 0.08);
+  --nav-active-bg: rgba(5, 150, 104, 0.15);
+  --nav-active-border: rgba(5, 150, 104, 0.45);
+  --nav-active-text: #05966a;
 }
 
 body {

@@ -57,7 +57,10 @@ export function clearTokens(): void {
 
 interface ApiFetchOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  /** JSON body (mutually exclusive with `formData`). */
   body?: unknown;
+  /** Multipart/form-data body (mutually exclusive with `body`). */
+  formData?: FormData;
   /** Attach the Bearer token (default true). */
   auth?: boolean;
 }
@@ -90,22 +93,28 @@ export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, auth = true } = options;
+  const { method = "GET", body, formData, auth = true } = options;
 
   const doFetch = (): Promise<Response> => {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const headers: Record<string, string> = {};
     if (auth) {
       const tokens = getTokens();
       if (tokens?.accessToken) {
         headers.Authorization = `Bearer ${tokens.accessToken}`;
       }
     }
+    let payload: BodyInit | undefined;
+    if (formData) {
+      // Let the browser set the multipart boundary: do NOT set Content-Type.
+      payload = formData;
+    } else if (body !== undefined) {
+      headers["Content-Type"] = "application/json";
+      payload = JSON.stringify(body);
+    }
     return fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: payload,
     });
   };
 

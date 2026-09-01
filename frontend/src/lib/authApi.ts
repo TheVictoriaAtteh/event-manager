@@ -27,6 +27,8 @@ export interface RegisterResult {
   message: string;
   emailVerificationRequired: boolean;
   accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
   user?: AuthUser;
 }
 
@@ -129,5 +131,20 @@ export const authApi = {
 
   me(): Promise<AuthUser> {
     return apiFetch<AuthUser>("/auth/me");
+  },
+
+  refresh(refreshToken: string): Promise<LoginResult> {
+    return apiFetch<LoginResult>("/auth/refresh", {
+      method: "POST",
+      body: { refreshToken },
+      auth: false,
+    }).then((result) => {
+      saveTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        expiresAt: Date.now() + result.expiresIn * 1000,
+      });
+      return result;
+    });
   },
 };

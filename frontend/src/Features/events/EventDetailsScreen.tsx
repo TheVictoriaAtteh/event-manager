@@ -51,11 +51,16 @@ const MOCK_ATTENDEES: Attendee[] = [
 ];
 
 interface EventDetailsScreenProps {
+  /** Selected event; consumed once this screen is wired to the API. */
+  eventId?: string;
   onBack: () => void;
+  /** Opens the attendee management screen for this event. */
+  onManageAttendees?: () => void;
 }
 
 export const EventDetailsScreen: React.FC<EventDetailsScreenProps> = ({
   onBack,
+  onManageAttendees,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [attendees, setAttendees] = useState<Attendee[]>(MOCK_ATTENDEES);
@@ -111,6 +116,31 @@ export const EventDetailsScreen: React.FC<EventDetailsScreenProps> = ({
             <ArrowLeft className="w-4 h-4" />
             Back to Events
           </button>
+          {onManageAttendees && (
+            <button
+              onClick={onManageAttendees}
+              className="
+                inline-flex
+                items-center
+                gap-2
+                px-4
+                py-2
+                rounded-lg
+                bg-emerald-500
+                hover:bg-emerald-400
+                text-emerald-950
+                text-xs
+                font-semibold
+                transition-colors
+                cursor-pointer
+                shadow-lg
+                shadow-emerald-500/10
+              "
+            >
+              <Users className="w-4 h-4" />
+              Manage Attendees
+            </button>
+          )}
         </div>
 
         {/* EVENT HEADER BANNER */}

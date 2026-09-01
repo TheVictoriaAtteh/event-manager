@@ -16,8 +16,10 @@ export interface EventItem {
 
 export interface EventsContextType {
   events: EventItem[];
-  addEvent: (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => void;
-  deleteEvent: (id: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  addEvent: (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
 }
 
 export const EventsContext = createContext<EventsContextType | undefined>(undefined);

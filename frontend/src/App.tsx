@@ -20,6 +20,8 @@ import { EventsDashboard } from "./Features/events/EventsDashboard";
 import { EventDetailsScreen } from "./Features/events/EventDetailsScreen";
 import { CreateEventScreen } from "./Features/events/CreateEventScreen";
 import { AttendeesListScreen } from "./Features/events/AttendeesListScreen";
+import AddAttendeeScreen from "./Features/events/AddAttendeeScreen";
+import UploadAttendeesScreen from "./Features/events/UploadAttendeesScreen";
 
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
 import BoothsScreen from "./Features/booths/BoothsScreen";
@@ -107,6 +109,11 @@ export default function App() {
 
   const [currentScreen, setCurrentScreen] = useState<Screen>(screenFromUrl);
   const [userRole, setUserRole] = useState<UserRole>("ATTENDEE");
+  /*
+   * The currently open event (UUID from the backend). Set when the user opens
+   * an event from the dashboard; used by the event-detail and attendee screens.
+   */
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
 
   /*
    * Create Event is a modal, not a separate screen.
@@ -138,6 +145,7 @@ export default function App() {
     logout();
     setUserRole("ATTENDEE");
     setShowCreateEvent(false);
+    setSelectedEventId("");
     setCurrentScreen("landing");
   };
 
@@ -253,7 +261,7 @@ export default function App() {
                     }
                   }}
                   onSelectEvent={(id: string) => {
-                    console.log("Selected event:", id);
+                    setSelectedEventId(id);
                     handleNavigate("event-details");
                   }}
                   /*
@@ -291,7 +299,9 @@ export default function App() {
 
             {currentScreen === "event-details" && (
               <EventDetailsScreen
+                eventId={selectedEventId}
                 onBack={() => setCurrentScreen("dashboard")}
+                onManageAttendees={() => handleNavigate("attendees")}
               />
             )}
 
@@ -301,7 +311,34 @@ export default function App() {
 
             {currentScreen === "attendees" && userRole === "ADMIN" && (
               <AttendeesListScreen
+                eventId={selectedEventId}
                 onBack={() => setCurrentScreen("dashboard")}
+                onAddAttendee={() => handleNavigate("add-attendee")}
+                onUploadAttendees={() => handleNavigate("upload-attendees")}
+              />
+            )}
+
+            {/* ================================================= */}
+            {/* ADD ATTENDEE - ADMIN ONLY */}
+            {/* ================================================= */}
+
+            {currentScreen === "add-attendee" && userRole === "ADMIN" && (
+              <AddAttendeeScreen
+                eventId={selectedEventId}
+                onBack={() => handleNavigate("attendees")}
+                onDone={() => handleNavigate("attendees")}
+              />
+            )}
+
+            {/* ================================================= */}
+            {/* UPLOAD ATTENDEES - ADMIN ONLY */}
+            {/* ================================================= */}
+
+            {currentScreen === "upload-attendees" && userRole === "ADMIN" && (
+              <UploadAttendeesScreen
+                eventId={selectedEventId}
+                onBack={() => handleNavigate("attendees")}
+                onDone={() => handleNavigate("attendees")}
               />
             )}
 

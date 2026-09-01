@@ -28,25 +28,38 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   const [capacity, setCapacity] = useState("");
   const [banner, setBanner] = useState<File | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Convert file to Object URL if uploaded for immediate local preview
     const imageUrl = banner ? URL.createObjectURL(banner) : undefined;
 
-    // Dispatch event to application context
-    addEvent({
-      title,
-      description,
-      date,
-      time,
-      location,
-      category,
-      maxCapacity: capacity ? Number(capacity) : 100,
-      imageUrl,
-    });
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-    onSubmitSuccess();
+    try {
+      // Dispatch event to application context
+      await addEvent({
+        title,
+        description,
+        date,
+        time,
+        location,
+        category,
+        maxCapacity: capacity ? Number(capacity) : 100,
+        imageUrl,
+      });
+
+      onSubmitSuccess();
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to create event');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -574,9 +587,16 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
               border-[var(--border-subtle)]
             "
           >
+            {submitError && (
+              <p className="text-xs text-red-500 mr-auto">
+                {submitError}
+              </p>
+            )}
+
             <button
               type="button"
               onClick={onBack}
+              disabled={isSubmitting}
               className="
                 px-4
                 py-2.5
@@ -591,6 +611,8 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                 font-medium
                 transition-colors
                 cursor-pointer
+                disabled:opacity-50
+                disabled:cursor-not-allowed
               "
             >
               Cancel
@@ -598,6 +620,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="
                 px-5
                 py-2.5
@@ -611,9 +634,21 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                 cursor-pointer
                 shadow-lg
                 shadow-emerald-900/10
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+                flex
+                items-center
+                gap-2
               "
             >
-              Publish Event
+              {isSubmitting ? (
+                <>
+                  <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Creating...
+                </>
+              ) : (
+                'Publish Event'
+              )}
             </button>
           </div>
         </form>
