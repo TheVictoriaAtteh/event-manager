@@ -33,6 +33,8 @@ export interface AuthContextType {
   signUp: (input: SignUpInput) => Promise<SignUpResult>;
   /** Clears the local session (JWTs are stateless). */
   logout: () => void;
+  /** Directly sets the user (used for OAuth callbacks). */
+  setUser: (user: User) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

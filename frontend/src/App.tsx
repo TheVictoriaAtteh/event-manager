@@ -10,6 +10,7 @@ import { LoginScreen } from "./Features/auth/LoginScreen";
 import { ForgotPasswordScreen } from "./Features/auth/ForgotPasswordScreen";
 import { VerifyEmailScreen } from "./Features/auth/VerifyEmailScreen";
 import { ResetPasswordScreen } from "./Features/auth/ResetPasswordScreen";
+import { OAuthCallbackScreen } from "./Features/auth/OAuthCallbackScreen";
 import type { UserRole } from "./Features/auth/types";
 
 import SettingsScreen, {
@@ -37,6 +38,7 @@ type Screen =
   | "forgot-password"
   | "verify-email"
   | "reset-password"
+  | "oauth-callback"
   | "dashboard"
   | "event-details"
   | "attendees"
@@ -101,6 +103,7 @@ const screenFromUrl = (): Screen => {
   const path = window.location.pathname.replace(/\/+$/, "");
   if (path === "/auth/verify") return "verify-email";
   if (path === "/auth/reset-password") return "reset-password";
+  if (path === "/auth/callback") return "oauth-callback";
   return "landing";
 };
 
@@ -147,6 +150,11 @@ export default function App() {
     setShowCreateEvent(false);
     setSelectedEventId("");
     setCurrentScreen("landing");
+  };
+
+  const handleAuthSuccess = (role: UserRole) => {
+    setUserRole(role);
+    setCurrentScreen("dashboard");
   };
 
   /*
@@ -239,6 +247,17 @@ export default function App() {
             {currentScreen === "forgot-password" && (
               <ForgotPasswordScreen
                 onNavigateToLogin={() => setCurrentScreen("login")}
+              />
+            )}
+
+            {/* ================================================= */}
+            {/* OAUTH CALLBACK */}
+            {/* ================================================= */}
+
+            {currentScreen === "oauth-callback" && (
+              <OAuthCallbackScreen
+                onSuccess={handleAuthSuccess}
+                onError={() => setCurrentScreen("login")}
               />
             )}
 

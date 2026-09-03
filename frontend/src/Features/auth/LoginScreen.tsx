@@ -54,9 +54,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Google OAuth is not implemented on the backend yet (Nice-to-have).
-    setGoogleNote(true);
+  const handleGoogleSignIn = async () => {
+    try {
+      setError("");
+      setGoogleNote(false);
+      const { url } = await authApi.initiateGoogleOAuth();
+      // Redirect to Google OAuth page
+      window.location.href = url;
+    } catch (err) {
+      setError("Could not initiate Google sign-in. Please try again.");
+    }
   };
 
   const handleResendVerification = async () => {

@@ -14,8 +14,12 @@ const toUser = (u: AuthUser): User => ({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const setUserDirect = useCallback((newUser: User) => {
+    setUserState(newUser);
+  }, []);
 
   /*
    * Restore the session on boot: if a token pair exists, validate it
@@ -32,10 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       try {
         const me = await authApi.me();
-        setUser(toUser(me));
+        setUserState(toUser(me));
       } catch {
         clearTokens();
-        setUser(null);
+        setUserState(null);
       } finally {
         setIsLoading(false);
       }
@@ -46,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = useCallback(async (email: string, password: string): Promise<User> => {
     const result = await authApi.login(email, password);
     const next = toUser(result.user);
-    setUser(next);
+    setUserState(next);
     return next;
   }, []);
 
@@ -63,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         expiresAt: Date.now() + expiresIn * 1000,
       });
       const next = toUser(result.user);
-      setUser(next);
+      setUserState(next);
       return { emailVerificationRequired: false, user: next };
     }
 
@@ -72,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = useCallback(() => {
     clearTokens();
-    setUser(null);
+    setUserState(null);
   }, []);
 
   return (
@@ -84,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signUp,
         logout,
+        setUser: setUserDirect,
       }}
     >
       {children}

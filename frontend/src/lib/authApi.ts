@@ -147,4 +147,34 @@ export const authApi = {
       return result;
     });
   },
+
+  /**
+   * Initiate Google OAuth sign-in.
+   * Returns the Google authorization URL to redirect to.
+   */
+  async initiateGoogleOAuth(): Promise<{ url: string }> {
+    return apiFetch<{ url: string }>("/auth/oauth/google", {
+      method: "GET",
+      auth: false,
+    });
+  },
+
+  /**
+   * Handle OAuth callback after Google redirects back.
+   * Exchanges the authorization code for a session.
+   */
+  oauthCallback(code: string): Promise<LoginResult> {
+    return apiFetch<LoginResult>("/auth/oauth/callback", {
+      method: "POST",
+      body: { code },
+      auth: false,
+    }).then((result) => {
+      saveTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        expiresAt: Date.now() + result.expiresIn * 1000,
+      });
+      return result;
+    });
+  },
 };
