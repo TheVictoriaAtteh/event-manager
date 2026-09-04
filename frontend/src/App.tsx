@@ -392,6 +392,7 @@ export default function App() {
 
             {currentScreen === "check-in" && (
               <CheckInScreen
+                eventId={selectedEventId}
                 onBack={() => setCurrentScreen("dashboard")}
               />
             )}
@@ -402,6 +403,7 @@ export default function App() {
 
             {currentScreen === "check-in-log" && userRole === "ADMIN" && (
               <CheckInLogScreen
+                eventId={selectedEventId}
                 onBack={() => setCurrentScreen("dashboard")}
               />
             )}

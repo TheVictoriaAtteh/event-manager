@@ -120,16 +120,15 @@ export async function apiFetch<T>(
 
   let res = await doFetch();
 
-  if (res.status === 401 && auth) {
+  // Supabase-validated tokens return a plain 401 when expired (not TOKEN_EXPIRED).
+  // Attempt a transparent refresh on any 401 as long as we have a refresh token.
+  if (res.status === 401 && auth && getTokens()?.refreshToken) {
     const err = await parseError(res.clone());
-    if (err.code === "TOKEN_EXPIRED" && getTokens()?.refreshToken) {
-      try {
-        await refreshTokens();
-        res = await doFetch();
-      } catch {
-        throw err;
-      }
-    } else {
+    try {
+      await refreshTokens();
+      res = await doFetch();
+    } catch {
+      // Refresh failed — surface the original 401 to the caller.
       throw err;
     }
   }

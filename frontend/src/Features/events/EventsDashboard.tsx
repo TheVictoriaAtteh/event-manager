@@ -15,9 +15,12 @@ import {
   CheckCircle2,
   X,
   UserPlus,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 import type { UserRole } from "../auth/types";
+import { useEvents } from "../../context/useEvents";
 
 interface EventsDashboardProps {
   userRole: UserRole;
@@ -28,15 +31,6 @@ interface EventsDashboardProps {
   onNavigate: (screen: string) => void;
 }
 
-interface EventItem {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  isPrivate: boolean;
-  image: string;
-}
-
 export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   userRole,
   onLogout,
@@ -45,6 +39,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   onNavigateToAttendees,
   onNavigate,
 }) => {
+  const { events, isLoading, error } = useEvents();
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [privateCode, setPrivateCode] = useState("");
   const [codeSuccessMsg, setCodeSuccessMsg] = useState("");
@@ -53,35 +48,10 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   const isAdmin = userRole === "ADMIN";
   const isAttendee = userRole === "ATTENDEE";
 
-  const mockEvents: EventItem[] = [
-    {
-      id: "1",
-      title: "Tech Innovation Summit 2026",
-      category: "Conference",
-      date: "Aug 24, 2026",
-      isPrivate: false,
-      image:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=60",
-    },
-    {
-      id: "2",
-      title: "UI/UX Design Workshop",
-      category: "Workshop",
-      date: "Sep 02, 2026",
-      isPrivate: true,
-      image:
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop&q=60",
-    },
-    {
-      id: "3",
-      title: "Developer Meetup & Networking",
-      category: "Networking",
-      date: "Sep 15, 2026",
-      isPrivate: false,
-      image:
-        "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&auto=format&fit=crop&q=60",
-    },
-  ];
+  // Computed stats from real event data
+  const totalEvents = events.length;
+  const upcomingEvents = events.filter((e) => e.status === "UPCOMING").length;
+  const activeEvents = events.filter((e) => e.status === "ONGOING").length;
 
   const handlePrivateCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,7 +603,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
               </span>
 
               <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">
-                {isAdmin ? "12" : "4"}
+                {isLoading ? "—" : totalEvents}
               </div>
             </div>
 
@@ -642,15 +612,15 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
             </div>
           </div>
 
-          {/* REGISTERED */}
+          {/* UPCOMING */}
           <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] p-6 rounded-2xl flex justify-between items-center">
             <div>
               <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-semibold">
-                {isAdmin ? "Total Registered" : "Upcoming Events"}
+                {isAdmin ? "Upcoming Events" : "Upcoming Events"}
               </span>
 
               <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">
-                {isAdmin ? "275" : "2"}
+                {isLoading ? "—" : upcomingEvents}
               </div>
             </div>
 
@@ -667,7 +637,7 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
               </span>
 
               <div className="text-3xl font-extrabold text-[var(--text-primary)] mt-1">
-                {isAdmin ? "3" : "1"}
+                {isLoading ? "—" : activeEvents}
               </div>
             </div>
 
@@ -681,66 +651,119 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
         {/* EVENTS GRID */}
         {/* ========================================================= */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockEvents.map((event) => (
-            <div
-              key={event.id}
-              onClick={() => onSelectEvent(event.id)}
-              className="
-                group
-                bg-[var(--bg-surface)]
-                border border-[var(--border-default)]
-                rounded-2xl
-                overflow-hidden
-                hover:border-emerald-500/50
-                transition-all
-                cursor-pointer
-                flex
-                flex-col
-              "
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-24 text-[var(--text-secondary)]">
+            <Loader2 className="w-8 h-8 animate-spin mr-3" />
+            <span className="text-sm font-medium">Loading events…</span>
+          </div>
+        )}
 
-                <span className="absolute top-3 left-3 px-3 py-1 bg-[var(--bg-input)]/90 backdrop-blur-md border border-[var(--border-default)] text-[var(--text-accent)] text-xs rounded-full font-medium">
-                  {event.category}
-                </span>
+        {/* Error state */}
+        {!isLoading && error && (
+          <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-                {event.isPrivate && (
-                  <span className="absolute top-3 right-3 px-3 py-1 bg-amber-500/90 text-amber-950 text-xs rounded-full font-bold">
-                    Private
+        {/* Empty state */}
+        {!isLoading && !error && events.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 text-center text-[var(--text-secondary)]">
+            <CalendarDays className="w-12 h-12 mb-4 opacity-30" />
+            <p className="text-base font-semibold text-[var(--text-primary)]">No events yet</p>
+            {isAdmin && (
+              <p className="text-sm mt-1">
+                Click{" "}
+                <button
+                  onClick={onCreateEvent}
+                  className="text-[var(--text-accent)] font-semibold hover:underline"
+                >
+                  + Create New Event
+                </button>{" "}
+                to get started.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Events grid */}
+        {!isLoading && !error && events.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <div
+                key={event.id}
+                onClick={() => onSelectEvent(event.id)}
+                className="
+                  group
+                  bg-[var(--bg-surface)]
+                  border border-[var(--border-default)]
+                  rounded-2xl
+                  overflow-hidden
+                  hover:border-emerald-500/50
+                  transition-all
+                  cursor-pointer
+                  flex
+                  flex-col
+                "
+              >
+                <div className="h-48 relative overflow-hidden bg-[var(--bg-input)]">
+                  {event.imageUrl ? (
+                    <img
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <CalendarDays className="w-10 h-10 text-[var(--text-muted)] opacity-40" />
+                    </div>
+                  )}
+
+                  <span className="absolute top-3 left-3 px-3 py-1 bg-[var(--bg-input)]/90 backdrop-blur-md border border-[var(--border-default)] text-[var(--text-accent)] text-xs rounded-full font-medium">
+                    {event.category}
                   </span>
-                )}
-              </div>
 
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-bold text-lg text-[var(--text-primary)] group-hover:text-emerald-500 transition-colors">
-                    {event.title}
-                  </h3>
-
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">
-                    {event.date}
-                  </p>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-[var(--border-default)] flex justify-between items-center text-xs text-[var(--text-accent)] font-medium">
-                  <span>View Details →</span>
-
-                  {isAttendee && (
-                    <span className="text-[var(--text-accent)] font-bold">
-                      Register
+                  {event.status === "ONGOING" && (
+                    <span className="absolute top-3 right-3 px-3 py-1 bg-emerald-500/90 text-emerald-950 text-xs rounded-full font-bold">
+                      Live
+                    </span>
+                  )}
+                  {event.status === "COMPLETED" && (
+                    <span className="absolute top-3 right-3 px-3 py-1 bg-[var(--bg-input)]/90 text-[var(--text-muted)] text-xs rounded-full font-medium">
+                      Ended
                     </span>
                   )}
                 </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-bold text-lg text-[var(--text-primary)] group-hover:text-emerald-500 transition-colors">
+                      {event.title}
+                    </h3>
+
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      {event.date}{event.location ? ` · ${event.location}` : ""}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-[var(--border-default)] flex justify-between items-center text-xs text-[var(--text-accent)] font-medium">
+                    <span>View Details →</span>
+
+                    {isAttendee && (
+                      <span className="text-[var(--text-accent)] font-bold">
+                        Register
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
 
       {/* ========================================================= */}

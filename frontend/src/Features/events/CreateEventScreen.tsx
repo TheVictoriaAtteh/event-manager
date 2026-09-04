@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import {
   X,
   Calendar,
-  Clock,
   MapPin,
   Upload,
 } from "lucide-react";
 import { useEvents } from "../../context/useEvents";
+import { uploadImage } from "../../lib/uploadsApi";
 
 interface CreateEventScreenProps {
   onBack: () => void;
@@ -29,19 +29,35 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   const [banner, setBanner] = useState<File | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convert file to Object URL if uploaded for immediate local preview
-    const imageUrl = banner ? URL.createObjectURL(banner) : undefined;
-
-    setIsSubmitting(true);
     setSubmitError(null);
 
+    let imageUrl: string | undefined;
+
+    // Step 1: Upload the banner image (if provided) to get a persistent URL.
+    if (banner) {
+      setIsUploading(true);
+      try {
+        const { url } = await uploadImage(banner);
+        imageUrl = url;
+      } catch (error) {
+        setSubmitError(error instanceof Error ? error.message : 'Failed to upload image');
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    // Step 2: Create the event with the persistent image URL.
+    setIsSubmitting(true);
     try {
-      // Dispatch event to application context
       await addEvent({
         title,
         description,
@@ -66,8 +82,12 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       setBanner(file);
+      // Generate a local preview URL (only used in-component for display, never persisted).
+      const prev = URL.createObjectURL(file);
+      setBannerPreview(prev);
     }
   };
+
 
   return (
     <div
@@ -309,48 +329,31 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                   mb-1.5
                 "
               >
-                Time
+                Start Time
               </label>
 
-              <div className="relative">
-                <Clock
-                  className="
-                    w-4
-                    h-4
-                    absolute
-                    left-3.5
-                    top-1/2
-                    -translate-y-1/2
-                    text-[var(--text-muted)]
-                    pointer-events-none
-                  "
-                />
-
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 10:00 AM"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="
-                    w-full
-                    pl-10
-                    pr-3.5
-                    py-2.5
-                    bg-[var(--bg-input)]
-                    border
-                    border-[var(--border-default)]
-                    rounded-xl
-                    text-sm
-                    text-[var(--text-primary)]
-                    focus:outline-none
-                    focus:border-emerald-500
-                    focus:ring-2
-                    focus:ring-emerald-500/10
-                    transition-all
-                  "
-                />
-              </div>
+              <input
+                type="time"
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="
+                  w-full
+                  px-3.5
+                  py-2.5
+                  bg-[var(--bg-input)]
+                  border
+                  border-[var(--border-default)]
+                  rounded-xl
+                  text-sm
+                  text-[var(--text-primary)]
+                  focus:outline-none
+                  focus:border-emerald-500
+                  focus:ring-2
+                  focus:ring-emerald-500/10
+                  transition-all
+                "
+              />
             </div>
           </div>
 
@@ -518,8 +521,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                 border-[var(--border-default)]
                 hover:border-emerald-500/50
                 rounded-2xl
-                p-6
-                text-center
+                overflow-hidden
                 bg-[var(--bg-input)]
                 transition-colors
                 cursor-pointer
@@ -527,51 +529,64 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             >
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/gif,image/svg+xml"
+                accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />
 
-              <div
-                className="
-                  w-10
-                  h-10
-                  mx-auto
-                  rounded-full
-                  bg-emerald-500/10
-                  border
-                  border-emerald-500/20
-                  flex
-                  items-center
-                  justify-center
-                  text-emerald-500
-                "
-              >
-                <Upload className="w-4 h-4" />
-              </div>
+              {bannerPreview ? (
+                <div className="relative w-full h-36">
+                  <img
+                    src={bannerPreview}
+                    alt="Banner preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+                    <p className="text-xs text-white font-medium">Click to change</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      mx-auto
+                      rounded-full
+                      bg-emerald-500/10
+                      border
+                      border-emerald-500/20
+                      flex
+                      items-center
+                      justify-center
+                      text-emerald-500
+                    "
+                  >
+                    <Upload className="w-4 h-4" />
+                  </div>
 
-              <p
-                className="
-                  text-xs
-                  text-[var(--text-primary)]
-                  font-medium
-                  mt-2
-                "
-              >
-                {banner
-                  ? banner.name
-                  : "Click to upload or drag and drop"}
-              </p>
+                  <p
+                    className="
+                      text-xs
+                      text-[var(--text-primary)]
+                      font-medium
+                      mt-2
+                    "
+                  >
+                    Click to upload or drag and drop
+                  </p>
 
-              <p
-                className="
-                  text-[10px]
-                  text-[var(--text-muted)]
-                  mt-1
-                "
-              >
-                SVG, PNG, JPG or GIF (max. 800x400px)
-              </p>
+                  <p
+                    className="
+                      text-[10px]
+                      text-[var(--text-muted)]
+                      mt-1
+                    "
+                  >
+                    SVG, PNG, JPG, GIF or WEBP (max 5 MB)
+                  </p>
+                </div>
+              )}
             </label>
           </div>
 
@@ -596,7 +611,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             <button
               type="button"
               onClick={onBack}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
               className="
                 px-4
                 py-2.5
@@ -620,7 +635,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
               className="
                 px-5
                 py-2.5
@@ -641,7 +656,12 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                 gap-2
               "
             >
-              {isSubmitting ? (
+              {isUploading ? (
+                <>
+                  <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Uploading...
+                </>
+              ) : isSubmitting ? (
                 <>
                   <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                   Creating...

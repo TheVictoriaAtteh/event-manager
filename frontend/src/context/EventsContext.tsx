@@ -72,16 +72,24 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addEvent = useCallback(
     async (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => {
       try {
-        // Transform frontend EventItem format to backend CreateEventInput
+        // eventData.time comes from <input type="time"> → always "HH:mm" (24-hour).
+        // Combine with date to form a valid local datetime string.
+        const startDateTime = new Date(`${eventData.date}T${eventData.time}`);
+
+        if (isNaN(startDateTime.getTime())) {
+          throw new Error(
+            'Invalid date or time value. Please pick a date and select a time.',
+          );
+        }
+
+        const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+
         const createInput = {
           title: eventData.title,
           description: eventData.description,
           date: eventData.date,
-          // Convert time string back to ISO datetime (combine date + time)
-          startsAt: new Date(`${eventData.date}T${eventData.time}`).toISOString(),
-          endsAt: new Date(
-            new Date(`${eventData.date}T${eventData.time}`).getTime() + 2 * 60 * 60 * 1000,
-          ).toISOString(), // Default 2-hour duration
+          startsAt: startDateTime.toISOString(),
+          endsAt: endDateTime.toISOString(),
           location: eventData.location,
           capacity: eventData.maxCapacity,
           logoUrl: eventData.imageUrl,

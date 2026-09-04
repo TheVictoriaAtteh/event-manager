@@ -12,16 +12,21 @@ export interface Hall {
   organizationId: string;
   createdAt: string;
   updatedAt: string;
+  _count?: {
+    events: number;
+  };
 }
 
 export interface CreateHallInput {
   name: string;
-  address: string;
+  address?: string;
+  description?: string;
   capacity: number;
 }
 
 export interface UpdateHallInput {
   name?: string;
   address?: string;
+  description?: string;
   capacity?: number;
 }
