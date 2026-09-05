@@ -99,6 +99,8 @@ export async function apiFetch<T>(
     const headers: Record<string, string> = {};
     if (auth) {
       const tokens = getTokens();
+       console.log("ACCESS TOKEN BEING SENT:", tokens?.accessToken);
+
       if (tokens?.accessToken) {
         headers.Authorization = `Bearer ${tokens.accessToken}`;
       }
