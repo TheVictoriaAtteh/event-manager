@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, UserPlus, Loader2 } from "lucide-react";
-import { attendeesApi } from "../../lib/attendeesApi";
 import { ApiError } from "../../lib/apiClient";
+import { useCreateAttendeeMutation } from "../../lib/apiQueries";
 
 interface AddAttendeeScreenProps {
   eventId: string;
@@ -17,20 +17,17 @@ export const AddAttendeeScreen: React.FC<AddAttendeeScreenProps> = ({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [passType, setPassType] = useState("General");
-  const [loading, setLoading] = useState(false);
+  const createAttendeeMutation = useCreateAttendeeMutation(eventId);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
     try {
-      await attendeesApi.create(eventId, { name, email, passType });
+      await createAttendeeMutation.mutateAsync({ name, email, passType });
       onDone();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not add attendee.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -69,9 +66,9 @@ export const AddAttendeeScreen: React.FC<AddAttendeeScreenProps> = ({
             <button type="button" onClick={onBack} className="px-4 py-2.5 bg-[var(--bg-input)] hover:bg-[var(--hover-surface)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-medium transition-colors cursor-pointer">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition-colors cursor-pointer shadow-lg shadow-emerald-900/10 disabled:opacity-60">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-              {loading ? "Adding…" : "Add Attendee"}
+            <button type="submit" disabled={createAttendeeMutation.isPending} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition-colors cursor-pointer shadow-lg shadow-emerald-900/10 disabled:opacity-60">
+              {createAttendeeMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+              {createAttendeeMutation.isPending ? "Adding…" : "Add Attendee"}
             </button>
           </div>
         </form>

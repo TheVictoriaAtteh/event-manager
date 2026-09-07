@@ -1,13 +1,14 @@
-/**
- * Minimal API client for the Event Manager backend (NestJS, port 4000).
- *
- * - Base URL from VITE_API_URL (falls back to the local backend).
- * - Stores JWT pair in localStorage under `gatepass_tokens`.
- * - Automatically refreshes once when the access token expires.
- */
+/** Shared Axios client for the Event Manager backend. */
+
+import axios, { type AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
 export const API_BASE_URL: string =
   (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:4000";
+
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+});
 
 const TOKENS_KEY = "gatepass_tokens";
 
@@ -28,6 +29,58 @@ export class ApiError extends Error {
     this.code = code;
   }
 }
+
+function axiosErrorToApiError(error: AxiosError<{ code?: string; message?: string | string[] }>): ApiError {
+  const data = error.response?.data;
+  const message = Array.isArray(data?.message)
+    ? data.message.join("; ")
+    : data?.message ?? `Request failed (${error.response?.status ?? 0})`;
+  return new ApiError(error.response?.status ?? 0, data?.code, message);
+}
+
+/** All feature API modules should use this typed Axios boundary. */
+export async function apiRequest<T>(config: AxiosRequestConfig): Promise<T> {
+  try {
+    const response = await apiClient.request<T>(config);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) throw axiosErrorToApiError(error);
+    throw error;
+  }
+}
+
+const attachAccessToken = (config: InternalAxiosRequestConfig) => {
+  const tokens = getTokens();
+  if (tokens?.accessToken) {
+    config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+  }
+  return config;
+};
+
+apiClient.interceptors.request.use(attachAccessToken);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError<{ code?: string; message?: string | string[] }>) => {
+    const originalRequest = error.config;
+    const code = error.response?.data?.code;
+    const refreshToken = getTokens()?.refreshToken;
+
+    if (
+      error.response?.status === 401 &&
+      code === "TOKEN_EXPIRED" &&
+      refreshToken &&
+      originalRequest &&
+      !originalRequest.headers["x-token-refresh-retry"]
+    ) {
+      originalRequest.headers["x-token-refresh-retry"] = "true";
+      await refreshTokens();
+      return apiClient(originalRequest);
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 /* ------------------------------------------------------------------ */
 /* Token storage                                                       */

@@ -3,7 +3,7 @@
  * Connects to the NestJS backend /events routes.
  */
 
-import { apiFetch } from "./apiClient";
+import { apiRequest } from "./apiClient";
 import type {
   Event,
   CreateEventInput,
@@ -16,52 +16,41 @@ export const eventsApi = {
    * Get all events with organizer, hall, and attendee count.
    */
   list(): Promise<Event[]> {
-    return apiFetch<Event[]>("/events");
+    return apiRequest<Event[]>({ url: "/events", method: "GET" });
   },
 
   /**
    * Get a single event by ID with full details.
    */
   get(id: string): Promise<Event> {
-    return apiFetch<Event>(`/events/${id}`);
+    return apiRequest<Event>({ url: `/events/${id}`, method: "GET" });
   },
 
   /**
    * Create a new event.
    */
   create(input: CreateEventInput): Promise<Event> {
-    return apiFetch<Event>("/events", {
-      method: "POST",
-      body: input,
-    });
+    return apiRequest<Event>({ url: "/events", method: "POST", data: input });
   },
 
   /**
    * Update an existing event.
    */
   update(id: string, input: UpdateEventInput): Promise<Event> {
-    return apiFetch<Event>(`/events/${id}`, {
-      method: "PATCH",
-      body: input,
-    });
+    return apiRequest<Event>({ url: `/events/${id}`, method: "PATCH", data: input });
   },
 
   /**
    * Delete an event.
    */
   remove(id: string): Promise<Event> {
-    return apiFetch<Event>(`/events/${id}`, {
-      method: "DELETE",
-    });
+    return apiRequest<Event>({ url: `/events/${id}`, method: "DELETE" });
   },
 
   /**
    * Assign or update the hall for an event.
    */
   assignHall(id: string, input: AssignHallInput): Promise<Event> {
-    return apiFetch<Event>(`/events/${id}/hall`, {
-      method: "PATCH",
-      body: input,
-    });
+    return apiRequest<Event>({ url: `/events/${id}/hall`, method: "PATCH", data: input });
   },
 };
