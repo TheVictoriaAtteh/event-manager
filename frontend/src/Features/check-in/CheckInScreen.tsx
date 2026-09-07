@@ -119,7 +119,7 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
     try {
       const result = await checkInApi.scanPass(passId);
       setScanResult(result);
-    } catch (err: any) {
+    } catch (err:any) {
       console.error("Check-in scan error:", err);
       setScanError(err?.message || "Check-in failed. Invalid or expired pass.");
     } finally {
