@@ -15,6 +15,7 @@
     "@tanstack/react-router": "^1.170.33",
     "@types/axios": "^0.9.36",
     "axios": "^1.20.0",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.31.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",

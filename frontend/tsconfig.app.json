@@ -3,7 +3,15 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2022",
     "lib": ["ES2022", "DOM"],
+<<<<<<< HEAD
    
+=======
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+>>>>>>> f6d0fc7b9810c042957c4f5f375510b508b9689c
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,

@@ -3,40 +3,46 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { RequestUser } from '../../common/decorators/current-user.decorator';
-import type { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { UsersService } from '../../users/users.service';
 
-/**
- * Validates the JWT issued by THIS backend (HS256, JWT_SECRET).
- * Validation is stateless: the payload is trusted because the signature has
- * been verified by passport-jwt.
- *
- * Expiry is enforced manually in `validate` (with `ignoreExpiration: true`)
- * so that expired tokens surface as a distinct TOKEN_EXPIRED error instead
- * of passport's generic authentication failure.
- */
+const SUPABASE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAwXeZOrLjj8q0ZlHtV8MfjXZERbJ
+FrM7WfX2TJly3pfC3ySnFLRctCkvPIxw4LX7ibgskqRhQa78ofu58BC7hA==
+-----END PUBLIC KEY-----`;
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: true,
-      secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
+      ignoreExpiration: false,
+      secretOrKey: SUPABASE_PUBLIC_KEY,
+      algorithms: ['ES256'],
     });
   }
 
-  validate(payload: JwtPayload): RequestUser {
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
+  async validate(payload: {
+    sub: string;
+    email?: string;
+    exp?: number;
+    role?: string;
+  }): Promise<RequestUser> {
+    const user = await this.usersService.findBySupabaseUserId(payload.sub);
+    if (!user) {
       throw new UnauthorizedException({
-        message: 'Token has expired',
-        code: 'TOKEN_EXPIRED',
+        message: 'User account not found',
+        code: 'USER_NOT_FOUND',
       });
     }
     return {
-      id: payload.sub,
-      supabaseUserId: payload.supabaseUserId,
-      email: payload.email,
-      role: payload.role,
-      name: payload.name,
+      id: user.id,
+      supabaseUserId: user.supabaseUserId,
+      email: user.email,
+      role: user.role,
+      name: user.name,
     };
   }
 }
