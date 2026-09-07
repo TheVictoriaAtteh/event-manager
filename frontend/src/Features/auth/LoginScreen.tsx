@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { UserRole } from "./types";
 import { LogIn, Loader2 } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
@@ -23,7 +24,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent">(
@@ -31,16 +31,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   );
   const [googleNote, setGoogleNote] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setEmailNotVerified(false);
-    setLoading(true);
-
-    try {
-      const user = await login(email, password);
-      onLoginSuccess(user.role);
-    } catch (err) {
+  const loginMutation = useMutation({
+    mutationFn: () => login(email, password),
+    onSuccess: (user) => onLoginSuccess(user.role),
+    onError: (err) => {
       if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
         setEmailNotVerified(true);
         setError("Please verify your email before signing in.");
@@ -49,9 +43,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       } else {
         setError("Could not sign in. Please try again.");
       }
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setEmailNotVerified(false);
+    loginMutation.mutate();
   };
 
   const handleGoogleSignIn = async () => {
@@ -61,7 +60,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       const { url } = await authApi.initiateGoogleOAuth();
       // Redirect to Google OAuth page
       window.location.href = url;
-    } catch (err) {
+    } catch {
       setError("Could not initiate Google sign-in. Please try again.");
     }
   };
@@ -415,7 +414,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loginMutation.isPending}
               className="
                 w-full
                 flex
@@ -438,12 +437,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 disabled:cursor-not-allowed
               "
             >
-              {loading ? (
+              {loginMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <LogIn className="w-4 h-4" />
               )}
-              {loading
+              {loginMutation.isPending
                 ? "Signing in…"
                 : `Sign In as ${role === "ADMIN" ? "Admin" : "Attendee"}`}
             </button>

@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
 import { ArrowLeft, Upload, CheckCircle2, AlertTriangle, Loader2, FileText } from "lucide-react";
-import { attendeesApi, type CsvImportResult } from "../../lib/attendeesApi";
+import { type CsvImportResult } from "../../lib/attendeesApi";
 import { ApiError } from "../../lib/apiClient";
+import { useImportAttendeesMutation } from "../../lib/apiQueries";
 
 interface UploadAttendeesScreenProps {
   eventId: string;
@@ -16,7 +17,7 @@ export const UploadAttendeesScreen: React.FC<UploadAttendeesScreenProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const importAttendeesMutation = useImportAttendeesMutation(eventId);
   const [error, setError] = useState("");
   const [result, setResult] = useState<CsvImportResult | null>(null);
 
@@ -30,17 +31,14 @@ export const UploadAttendeesScreen: React.FC<UploadAttendeesScreenProps> = ({
   const handleUpload = async () => {
     if (!file) return;
     setError("");
-    setLoading(true);
     try {
-      const res = await attendeesApi.importCsv(eventId, file);
+      const res = await importAttendeesMutation.mutateAsync(file);
       setResult(res);
       if (res.created > 0) {
         setTimeout(() => onDone(), 1500);
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not upload CSV.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -72,9 +70,9 @@ export const UploadAttendeesScreen: React.FC<UploadAttendeesScreenProps> = ({
             <button type="button" onClick={onBack} className="px-4 py-2.5 bg-[var(--bg-input)] hover:bg-[var(--hover-surface)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-medium transition-colors cursor-pointer">
               Cancel
             </button>
-            <button type="button" onClick={() => void handleUpload()} disabled={!file || loading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-900/10">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              {loading ? "Uploading…" : "Upload and Import"}
+            <button type="button" onClick={() => void handleUpload()} disabled={!file || importAttendeesMutation.isPending} className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-900/10">
+              {importAttendeesMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {importAttendeesMutation.isPending ? "Uploading…" : "Upload and Import"}
             </button>
           </div>
         </div>
