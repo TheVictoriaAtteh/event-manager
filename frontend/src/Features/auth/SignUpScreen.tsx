@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { UserRole } from "./types";
 import { UserPlus, Loader2, MailCheck } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
@@ -21,25 +22,16 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [verificationPending, setVerificationPending] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const result = await signUp({ name: fullName, email, password, role });
-      if (result.emailVerificationRequired) {
-        // Supabase sent the confirmation email; the user must verify
-        // before signing in.
-        setVerificationPending(true);
-      } else {
-        onSignUpSuccess(result.user?.role ?? role);
-      }
-    } catch (err) {
+  const signUpMutation = useMutation({
+    mutationFn: () => signUp({ name: fullName, email, password, role }),
+    onSuccess: (result) => {
+      if (result.emailVerificationRequired) setVerificationPending(true);
+      else onSignUpSuccess(result.user?.role ?? role);
+    },
+    onError: (err) => {
       if (err instanceof ApiError && err.code === "EMAIL_ALREADY_EXISTS") {
         setError("An account with this email already exists. Try signing in.");
       } else if (err instanceof ApiError) {
@@ -47,9 +39,13 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
       } else {
         setError("Could not create your account. Please try again.");
       }
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    signUpMutation.mutate();
   };
 
   const handleGoogleSignUp = async () => {
@@ -58,7 +54,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
       const { url } = await authApi.initiateGoogleOAuth();
       // Redirect to Google OAuth page
       window.location.href = url;
-    } catch (err) {
+    } catch {
       setError("Could not initiate Google sign-up. Please try again.");
     }
   };
@@ -407,7 +403,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             {/* SUBMIT */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={signUpMutation.isPending}
               className="
                 w-full
                 flex
@@ -430,12 +426,12 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
                 disabled:cursor-not-allowed
               "
             >
-              {loading ? (
+              {signUpMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <UserPlus className="w-4 h-4" />
               )}
-              {loading
+              {signUpMutation.isPending
                 ? "Creating account…"
                 : `Create ${role === "ADMIN" ? "Admin" : "Attendee"} Account`}
             </button>

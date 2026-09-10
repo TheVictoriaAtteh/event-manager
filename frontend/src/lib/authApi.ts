@@ -3,7 +3,8 @@
  * Contract: backend/AUTH_INTEGRATION.md
  */
 
-import { apiFetch, saveTokens } from "./apiClient";
+import axios from "axios";
+import { apiClient, apiFetch, ApiError, saveTokens } from "./apiClient";
 import type { UserRole } from "../Features/auth/types";
 
 export interface AuthUser {
@@ -58,21 +59,32 @@ export interface MessageResult {
   message: string;
 }
 
+async function authRequest<T>(request: Promise<{ data: T }>): Promise<T> {
+  try {
+    return (await request).data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data as
+        | { code?: string; message?: string | string[] }
+        | undefined;
+      const message = Array.isArray(data?.message)
+        ? data.message.join("; ")
+        : data?.message ?? `Request failed (${error.response?.status ?? 0})`;
+      throw new ApiError(error.response?.status ?? 0, data?.code, message);
+    }
+    throw error;
+  }
+}
+
 export const authApi = {
   register(input: RegisterInput): Promise<RegisterResult> {
-    return apiFetch<RegisterResult>("/auth/register", {
-      method: "POST",
-      body: input,
-      auth: false,
-    });
+    return authRequest(apiClient.post<RegisterResult>("/auth/register", input));
   },
 
   login(email: string, password: string): Promise<LoginResult> {
-    return apiFetch<LoginResult>("/auth/login", {
-      method: "POST",
-      body: { email, password },
-      auth: false,
-    }).then((result) => {
+    return authRequest(
+      apiClient.post<LoginResult>("/auth/login", { email, password }),
+    ).then((result) => {
       saveTokens({
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,

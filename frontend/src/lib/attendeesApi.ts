@@ -1,4 +1,4 @@
-import { apiFetch } from "./apiClient";
+import { apiRequest } from "./apiClient";
 
 export interface AttendeePass {
   id: string;
@@ -63,37 +63,32 @@ function toQuery(params: ListAttendeesParams): string {
 
 export const attendeesApi = {
   list(eventId: string, params: ListAttendeesParams = {}): Promise<AttendeeListResult> {
-    return apiFetch<AttendeeListResult>(
-      `/events/${eventId}/attendees${toQuery(params)}`,
-    );
+    return apiRequest<AttendeeListResult>({
+      url: `/events/${eventId}/attendees${toQuery(params)}`,
+      method: "GET",
+    });
   },
 
   create(eventId: string, input: CreateAttendeeInput): Promise<Attendee> {
-    return apiFetch<Attendee>(`/events/${eventId}/attendees`, {
-      method: "POST",
-      body: input,
-    });
+    return apiRequest<Attendee>({ url: `/events/${eventId}/attendees`, method: "POST", data: input });
   },
 
   update(id: string, input: UpdateAttendeeInput): Promise<Attendee> {
-    return apiFetch<Attendee>(`/attendees/${id}`, {
-      method: "PATCH",
-      body: input,
-    });
+    return apiRequest<Attendee>({ url: `/attendees/${id}`, method: "PATCH", data: input });
   },
 
   remove(id: string): Promise<{ success: true }> {
-    return apiFetch<{ success: true }>(`/attendees/${id}`, {
-      method: "DELETE",
-    });
+    return apiRequest<{ success: true }>({ url: `/attendees/${id}`, method: "DELETE" });
   },
 
   importCsv(eventId: string, file: File): Promise<CsvImportResult> {
     const formData = new FormData();
     formData.append("file", file);
-    return apiFetch<CsvImportResult>(`/events/${eventId}/attendees/import`, {
+    return apiRequest<CsvImportResult>({
+      url: `/events/${eventId}/attendees/import`,
       method: "POST",
-      formData,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
     });
   },
 };
