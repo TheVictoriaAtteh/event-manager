@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { EventsContext, type EventItem } from './EventsContextType';
-import { eventsApi } from '../lib/eventsApi';
 import type { Event } from '../api/interfaces/events';
+import { useCreateEventMutation, useDeleteEventMutation, useEventsQuery } from '../lib/apiQueries';
 
 /**
  * Compute event status based on start and end times.
@@ -44,30 +44,10 @@ function toEventItem(event: Event): EventItem {
 }
 
 export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<EventItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Load events from the backend on mount.
-   */
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const backendEvents = await eventsApi.list();
-        setEvents(backendEvents.map(toEventItem));
-      } catch (err) {
-        console.error('Failed to load events:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load events');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void loadEvents();
-  }, []);
+  const eventsQuery = useEventsQuery();
+  const createEventMutation = useCreateEventMutation();
+  const deleteEventMutation = useDeleteEventMutation();
+  const events = (eventsQuery.data ?? []).map(toEventItem);
 
   const addEvent = useCallback(
     async (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => {
@@ -95,28 +75,26 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           logoUrl: eventData.imageUrl,
         };
 
-        const newEvent = await eventsApi.create(createInput);
-        setEvents((prev) => [toEventItem(newEvent), ...prev]);
+        await createEventMutation.mutateAsync(createInput);
       } catch (err) {
         console.error('Failed to create event:', err);
         throw err;
       }
     },
-    [],
+    [createEventMutation],
   );
 
   const deleteEvent = useCallback(async (id: string) => {
     try {
-      await eventsApi.remove(id);
-      setEvents((prev) => prev.filter((evt) => evt.id !== id));
+      await deleteEventMutation.mutateAsync(id);
     } catch (err) {
       console.error('Failed to delete event:', err);
       throw err;
     }
-  }, []);
+  }, [deleteEventMutation]);
 
   return (
-    <EventsContext.Provider value={{ events, addEvent, deleteEvent, isLoading, error }}>
+    <EventsContext.Provider value={{ events, addEvent, deleteEvent, isLoading: eventsQuery.isLoading, error: eventsQuery.error instanceof Error ? eventsQuery.error.message : null }}>
       {children}
     </EventsContext.Provider>
   );
