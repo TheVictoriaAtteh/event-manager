@@ -1,0 +1,215 @@
+// =============================================================================
+// Event Manager — Prisma schema (source of truth)
+// Database: PostgreSQL.
+//
+// Prisma 7 notes:
+// - The connection URL does NOT live in this file. The CLI reads it from
+//   prisma.config.ts; the runtime client receives it through the PrismaPg
+//   driver adapter (see src/database/prisma.service.ts).
+// - Credentials are managed by Supabase Auth. This database NEVER stores
+//   passwords or password hashes — only the link to the Supabase identity.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String         @id @default(uuid())
+  supabaseUserId     String         @unique
+  email              String         @unique
+  name               String
+  role               UserRole       @default(ADMIN)
+  avatarUrl          String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  checkIns           CheckIn[]
+  organizedEvents    Event[]
+  uploadedFiles      File[]
+  notifications      Notification[]
+  ownedOrganizations Organization[]
+  assignedTasks      Task[]
+
+  @@map("users")
+}
+
+model Organization {
+  id           String   @id @default(uuid())
+  name         String
+  logoUrl      String?
+  brandColor   String?
+  address      String?
+  contactEmail String?
+  contactPhone String?
+  ownerId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  owner        User     @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+  @@map("organizations")
+}
+
+model Hall {
+  id             String       @id @default(uuid())
+  name           String
+  address        String?
+  description    String?
+  organizerId String
+  capacity       Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  events         Event[]
+  
+ 
+  @@map("halls")
+  @@index([organizerId])
+}
+
+model Event {
+  id                        String       @id @default(uuid())
+  description               String
+  date                      String
+  logoUrl                   String?
+  brandColor                String?
+  publicRegistrationEnabled Boolean      @default(false)
+  hallId                    String?
+  organizerId               String
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
+  category                  String?
+  endsAt                    String?
+  startsAt                  String
+  title                     String
+  attendees                 Attendee[]
+  hall                      Hall?        @relation(fields: [hallId], references: [id])
+ 
+  organizer                 User         @relation(fields: [organizerId], references: [id])
+  tasks                     Task[]
+
+  @@index([organizerId])
+  @@index([startsAt])
+  @@index([hallId, startsAt, endsAt])
+  @@map("events")
+}
+
+model Attendee {
+  id        String   @id @default(uuid())
+  eventId   String
+  name      String
+  email     String
+  passType  String   @default("General")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  passes    Pass[]
+
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@map("attendees")
+}
+
+model Pass {
+  id         String    @id @default(uuid())
+  attendeeId String   
+  qrToken   String    @unique
+  revokedAt  DateTime?
+  imageUrl String?
+  createdAt  DateTime  @default(now())
+  checkIn    CheckIn?
+  attendee   Attendee  @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+
+  @@index([attendeeId])
+  @@map("passes")
+}
+
+model CheckIn {
+  id          String   @id @default(uuid())
+  passId      String   @unique
+  scannedById String?
+  scannedAt   DateTime @default(now())
+  pass        Pass     @relation(fields: [passId], references: [id], onDelete: Cascade)
+  scannedBy   User?    @relation(fields: [scannedById], references: [id])
+
+  @@index([scannedAt])
+  @@map("check_ins")
+}
+
+model Task {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  dueAt        DateTime?
+  eventId      String
+  assignedToId String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  assignedTo   User?        @relation(fields: [assignedToId], references: [id])
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("tasks")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  title       String
+  message     String
+  type        NotificationType @default(GENERAL)
+  readAt      DateTime?
+  recipientId String
+  createdAt   DateTime         @default(now())
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, readAt])
+  @@map("notifications")
+}
+
+model File {
+  id           String   @id @default(uuid())
+  originalName String
+  mimeType     String
+  size         Int
+  storageKey   String   @unique
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+
+  @@index([uploadedById])
+  @@map("files")
+}
+
+enum UserRole {
+  ATTENDEE
+  ADMIN
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  GENERAL
+  EVENT
+  TASK
+  PASS
+}
