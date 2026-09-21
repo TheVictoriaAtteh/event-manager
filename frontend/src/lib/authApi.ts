@@ -1,10 +1,6 @@
-/**
- * Typed wrappers around the backend authentication endpoints.
- * Contract: backend/AUTH_INTEGRATION.md
- */
+/** Typed wrappers around the separately deployed API's auth endpoints. */
 
-import axios from "axios";
-import { apiClient, apiFetch, ApiError, saveTokens } from "./apiClient";
+import { apiFetch, apiRequest, saveTokens } from "./apiClient";
 import type { UserRole } from "../Features/auth/types";
 
 export interface AuthUser {
@@ -59,39 +55,30 @@ export interface MessageResult {
   message: string;
 }
 
-async function authRequest<T>(request: Promise<{ data: T }>): Promise<T> {
-  try {
-    return (await request).data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const data = error.response?.data as
-        | { code?: string; message?: string | string[] }
-        | undefined;
-      const message = Array.isArray(data?.message)
-        ? data.message.join("; ")
-        : data?.message ?? `Request failed (${error.response?.status ?? 0})`;
-      throw new ApiError(error.response?.status ?? 0, data?.code, message);
-    }
-    throw error;
-  }
+function saveSession(result: LoginResult): LoginResult {
+  saveTokens({
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    expiresAt: Date.now() + result.expiresIn * 1000,
+  });
+  return result;
 }
 
 export const authApi = {
   register(input: RegisterInput): Promise<RegisterResult> {
-    return authRequest(apiClient.post<RegisterResult>("/auth/register", input));
+    return apiRequest<RegisterResult>({
+      url: "/auth/register",
+      method: "POST",
+      data: input,
+    });
   },
 
   login(email: string, password: string): Promise<LoginResult> {
-    return authRequest(
-      apiClient.post<LoginResult>("/auth/login", { email, password }),
-    ).then((result) => {
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        expiresAt: Date.now() + result.expiresIn * 1000,
-      });
-      return result;
-    });
+    return apiRequest<LoginResult>({
+      url: "/auth/login",
+      method: "POST",
+      data: { email, password },
+    }).then(saveSession);
   },
 
   verifyEmail(input: VerifyEmailInput): Promise<VerifyEmailResult> {
@@ -107,14 +94,7 @@ export const authApi = {
       method: "POST",
       body: { accessToken, refreshToken },
       auth: false,
-    }).then((result) => {
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        expiresAt: Date.now() + result.expiresIn * 1000,
-      });
-      return result;
-    });
+    }).then(saveSession);
   },
 
   resendVerification(email: string): Promise<MessageResult> {
@@ -150,43 +130,22 @@ export const authApi = {
       method: "POST",
       body: { refreshToken },
       auth: false,
-    }).then((result) => {
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        expiresAt: Date.now() + result.expiresIn * 1000,
-      });
-      return result;
-    });
+    }).then(saveSession);
   },
 
-  /**
-   * Initiate Google OAuth sign-in.
-   * Returns the Google authorization URL to redirect to.
-   */
-  async initiateGoogleOAuth(): Promise<{ url: string }> {
+  /** Returns the Google authorization URL supplied by the external API. */
+  initiateGoogleOAuth(): Promise<{ url: string }> {
     return apiFetch<{ url: string }>("/auth/oauth/google", {
       method: "GET",
       auth: false,
     });
   },
 
-  /**
-   * Handle OAuth callback after Google redirects back.
-   * Exchanges the authorization code for a session.
-   */
   oauthCallback(code: string): Promise<LoginResult> {
     return apiFetch<LoginResult>("/auth/oauth/callback", {
       method: "POST",
       body: { code },
       auth: false,
-    }).then((result) => {
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        expiresAt: Date.now() + result.expiresIn * 1000,
-      });
-      return result;
-    });
+    }).then(saveSession);
   },
 };

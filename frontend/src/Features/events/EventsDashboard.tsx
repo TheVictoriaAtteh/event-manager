@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   Building2,
+  Tent,
   ScanLine,
   ClipboardList,
   CircleHelp,
@@ -263,6 +264,20 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
                   )}
                 </button>
 
+                {/* Teams / Booths opens as a dashboard modal. */}
+                <button
+                  onClick={() => onNavigate("booths")}
+                  title={isSidebarCollapsed ? "Teams / Booths" : undefined}
+                  className={`
+                    w-full flex items-center gap-3 px-3.5 py-3 rounded-xl
+                    text-[var(--text-secondary)] font-medium
+                    hover:bg-[var(--hover-surface)] hover:text-[var(--text-primary)]
+                    transition-all text-sm ${isSidebarCollapsed ? "justify-center" : ""}
+                  `}
+                >
+                  <Tent size={20} strokeWidth={2} className="min-w-[1.25rem]" />
+                  {!isSidebarCollapsed && <span className="whitespace-nowrap">Teams / Booths</span>}
+                </button>
               </>
             )}
 

@@ -1,60 +1,47 @@
-# Event Manager
+# Event Manager Frontend
 
-Event Manager is a full-stack application for creating events, managing rooms
-and attendees, issuing QR passes, and recording door check-ins.
+This repository contains **only the Event Manager web frontend**. The NestJS
+backend lives in a separate repository and is not included, built, or started
+from this project.
 
-- **Frontend:** React, TypeScript, Vite, React Query
-- **API:** NestJS, Prisma, PostgreSQL, Supabase Auth and Storage
+## Stack
 
-## Project layout
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS
+- TanStack React Query
 
-```text
-frontend/   React application
-backend/    NestJS API and Prisma schema/migrations
-```
+## Configure the external API
 
-## Local development
-
-### 1. Configure services
+The frontend requires the URL of the separately deployed API at build time.
 
 ```bash
-cp .env.example .env
-cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-Populate `backend/.env` with a PostgreSQL `DATABASE_URL` and your Supabase
-project settings. Create a public Supabase Storage bucket named `event-images`
-for event banners.
+Set the value to your backend's public base URL (without a trailing slash):
 
-### 2. Install dependencies and migrate
+```dotenv
+VITE_API_URL=https://api.your-domain.com
+```
+
+The API must allow this frontend's origin through CORS. Never put backend
+secrets in `VITE_*` variables: all Vite variables are visible in the browser.
+
+## Run locally
 
 ```bash
-npm ci
 npm ci --prefix frontend
-npm ci --prefix backend
-npm run prisma:migrate --prefix backend
+npm run dev
 ```
 
-### 3. Run the API and frontend
+The app runs on `http://localhost:3000`.
 
-In separate terminals:
-
-```bash
-npm run dev:backend
-npm run dev:frontend
-```
-
-The frontend is available at `http://localhost:3000`; Vite proxies `/api` to
-the API at `http://localhost:4000`, so browser code does not call localhost
-directly. Swagger is available at `http://localhost:4000/api/docs`.
-
-## Checks
+## Production build and checks
 
 ```bash
 npm run build
 npm run lint
-npm test
 ```
 
-`prisma generate` can run without a configured database. A real
-`DATABASE_URL` is still required to run the API or apply migrations.
+The actual frontend source and its package manifest are in [`frontend/`](./frontend).
