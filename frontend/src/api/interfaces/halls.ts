@@ -1,7 +1,4 @@
-/**
- * TypeScript interfaces for Hall (venue) related API responses.
- * Based on backend Prisma schema and NestJS controllers.
- */
+/** TypeScript contracts for the external API's /halls routes. */
 
 export interface Hall {
   id: string;
@@ -9,7 +6,7 @@ export interface Hall {
   address: string | null;
   description: string | null;
   capacity: number;
-  organizationId: string;
+  organizerId: string;
   createdAt: string;
   updatedAt: string;
   _count?: {

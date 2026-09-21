@@ -16,7 +16,6 @@ export const AddAttendeeScreen: React.FC<AddAttendeeScreenProps> = ({
 }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [passType, setPassType] = useState("General");
   const createAttendeeMutation = useCreateAttendeeMutation(eventId);
   const [error, setError] = useState("");
 
@@ -24,7 +23,7 @@ export const AddAttendeeScreen: React.FC<AddAttendeeScreenProps> = ({
     e.preventDefault();
     setError("");
     try {
-      await createAttendeeMutation.mutateAsync({ name, email, passType });
+      await createAttendeeMutation.mutateAsync({ name, email });
       onDone();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not add attendee.");
@@ -57,11 +56,6 @@ export const AddAttendeeScreen: React.FC<AddAttendeeScreenProps> = ({
             <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Email address</label>
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane.doe@example.com" className={inputClass} />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Pass type</label>
-            <input value={passType} onChange={(e) => setPassType(e.target.value)} placeholder="e.g. Guest, VIP, Speaker" className={inputClass} />
-          </div>
-
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--border-subtle)]">
             <button type="button" onClick={onBack} className="px-4 py-2.5 bg-[var(--bg-input)] hover:bg-[var(--hover-surface)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-medium transition-colors cursor-pointer">
               Cancel

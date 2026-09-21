@@ -28,6 +28,19 @@ VITE_API_URL=https://api.your-domain.com
 The API must allow this frontend's origin through CORS. Never put backend
 secrets in `VITE_*` variables: all Vite variables are visible in the browser.
 
+### Connected API contract
+
+The frontend is wired for the provided `event-manager-backend` contract:
+
+- registration creates an `ADMIN` account (the backend currently has no attendee user role);
+- events use `date` plus `startsAt`/`endsAt` time strings and a `hall`/`hallId` for venue data;
+- attendees accept only `name` and `email`, and imported CSV files use `Name,Email`;
+- check-in is `POST /check-in` with `{ "qrToken": "…" }`.
+
+The backend does not currently publish a standalone check-in-history endpoint, so
+this frontend derives the log from attendee check-in statuses returned by its
+supported attendee endpoint.
+
 ## Run locally
 
 ```bash

@@ -14,11 +14,17 @@ export interface EventItem {
   status: 'UPCOMING' | 'ONGOING' | 'COMPLETED';
 }
 
+export type CreateEventFormData = Omit<EventItem, 'id' | 'attendeesCount' | 'status' | 'category'> & {
+  /** Select an existing hall instead of creating a venue with the event. */
+  hallId?: string;
+};
+
 export interface EventsContextType {
   events: EventItem[];
   isLoading: boolean;
   error: string | null;
-  addEvent: (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => Promise<void>;
+  /** Category is display-only; the external event API does not accept it. */
+  addEvent: (eventData: CreateEventFormData) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
 }
 

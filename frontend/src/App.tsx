@@ -39,7 +39,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 function DashboardRoute() {
   const navigate = useNavigate(); const { user, logout } = useAuth();
-  return <EventsDashboard userRole={user?.role ?? "ATTENDEE"} onLogout={() => { logout(); navigate("/", { replace: true }); }} onCreateEvent={() => navigate("/app/events/new")} onSelectEvent={(id) => navigate(`/app/events/${id}`)} onNavigateToAttendees={() => navigate("/app/events")} onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app")} />;
+  return <EventsDashboard userRole={user?.role ?? "ADMIN"} onLogout={() => { logout(); navigate("/", { replace: true }); }} onCreateEvent={() => navigate("/app/events/new")} onSelectEvent={(id) => navigate(`/app/events/${id}`)} onNavigateToAttendees={() => navigate("/app/events")} onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app")} />;
 }
 function EventDetailsRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); return <EventDetailsScreen eventId={eventId} onBack={() => navigate("/app")} onManageAttendees={() => navigate(`/app/events/${eventId}/attendees`)} />; }
 function AttendeesRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); return <AttendeesListScreen eventId={eventId} onBack={() => navigate("/app")} onAddAttendee={() => navigate(`/app/events/${eventId}/attendees/add`)} onUploadAttendees={() => navigate(`/app/events/${eventId}/attendees/upload`)} />; }

@@ -25,7 +25,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  userRole,
   collapsed = false,
   onToggle,
   activeScreen = "dashboard",
@@ -72,26 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
-  /*
-   * ATTENDEE MENU
-   */
-  const attendeeMenuItems = [
-    {
-      id: "dashboard",
-      label: "My Events",
-      icon: CalendarDays,
-    },
-    {
-      id: "check-in",
-      label: "Check-In",
-      icon: ScanLine,
-    },
-  ];
-
-  const menuItems =
-    userRole === "ADMIN"
-      ? adminMenuItems
-      : attendeeMenuItems;
+  // The connected backend currently exposes administrator accounts only.
+  const menuItems = adminMenuItems;
 
   /*
    * SETTINGS
@@ -169,9 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </h1>
 
               <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
-                {userRole === "ADMIN"
-                  ? "Admin Console"
-                  : "Attendee Portal"}
+                Admin Console
               </p>
             </div>
           )}

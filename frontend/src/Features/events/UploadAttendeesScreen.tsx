@@ -51,7 +51,7 @@ export const UploadAttendeesScreen: React.FC<UploadAttendeesScreenProps> = ({
 
         <h1 className="text-2xl font-bold text-[var(--text-heading)] mb-1">Upload Attendees</h1>
         <p className="text-sm text-[var(--text-secondary)] mb-6">
-          Import a CSV with columns <span className="font-medium text-[var(--text-primary)]">Name, Email, Pass Type</span>. Rows with errors are skipped and reported — a bad row never fails the whole file.
+          Import a CSV with columns <span className="font-medium text-[var(--text-primary)]">Name, Email</span>. Rows with errors are skipped and reported — a bad row never fails the whole file.
         </p>
 
         {error && <div className="mb-4 p-4 rounded-lg text-sm text-red-500 bg-red-500/10 border border-red-500/20">{error}</div>}

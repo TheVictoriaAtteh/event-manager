@@ -1,45 +1,50 @@
 import React, { useCallback } from 'react';
-import { EventsContext, type EventItem } from './EventsContextType';
+import { EventsContext, type CreateEventFormData, type EventItem } from './EventsContextType';
 import type { Event } from '../api/interfaces/events';
 import { useCreateEventMutation, useDeleteEventMutation, useEventsQuery } from '../lib/apiQueries';
 
-/**
- * Compute event status based on start and end times.
- */
-function getEventStatus(startsAt: string, endsAt: string): 'UPCOMING' | 'ONGOING' | 'COMPLETED' {
-  const now = new Date();
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-
-  if (now < start) return 'UPCOMING';
-  if (now >= start && now <= end) return 'ONGOING';
-  return 'COMPLETED';
+function eventDateTime(date: string, time: string): Date | null {
+  const value = new Date(`${date}T${time}`);
+  return Number.isNaN(value.getTime()) ? null : value;
 }
 
-/**
- * Transform backend Event to frontend EventItem.
- */
-function toEventItem(event: Event): EventItem {
-  // Extract time from startsAt ISO string (e.g., "2026-09-15T10:00:00Z" -> "10:00 AM")
-  const startDate = new Date(event.startsAt);
-  const timeString = startDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+/** The backend stores event time separately from its calendar date. */
+function getEventStatus(date: string, startsAt: string, endsAt: string | null): EventItem['status'] {
+  const start = eventDateTime(date, startsAt);
+  if (!start) return 'UPCOMING';
+  if (new Date() < start) return 'UPCOMING';
 
+  if (!endsAt) return 'ONGOING';
+  const end = eventDateTime(date, endsAt);
+  if (!end) return 'ONGOING';
+  // A closing time after midnight belongs to the following calendar day.
+  if (end <= start) end.setDate(end.getDate() + 1);
+  return new Date() <= end ? 'ONGOING' : 'COMPLETED';
+}
+
+function addTwoHours(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return time;
+  const totalMinutes = Math.min(hours * 60 + minutes + 120, 23 * 60 + 59);
+  return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+}
+
+/** Transform the API event shape to the dashboard's presentation model. */
+function toEventItem(event: Event): EventItem {
   return {
     id: event.id,
     title: event.title,
     date: event.date,
-    time: timeString,
-          location: event.location,
-          description: event.description,
-          category: event.category ?? 'Event',
+    time: event.startsAt,
+    location: event.hall?.address || event.hall?.name || 'Venue to be confirmed',
+    description: event.description,
+    // Category is not accepted by the backend's event DTO. Keep this as a
+    // presentation label instead of sending an unsupported request field.
+    category: 'Event',
     attendeesCount: event._count?.attendees ?? 0,
-    maxCapacity: event.capacity,
+    maxCapacity: event.hall?.capacity ?? 0,
     imageUrl: event.logoUrl ?? undefined,
-    status: getEventStatus(event.startsAt, event.endsAt),
+    status: getEventStatus(event.date, event.startsAt, event.endsAt),
   };
 }
 
@@ -50,33 +55,32 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const events = (eventsQuery.data ?? []).map(toEventItem);
 
   const addEvent = useCallback(
-    async (eventData: Omit<EventItem, 'id' | 'attendeesCount' | 'status'>) => {
+    async (eventData: CreateEventFormData) => {
+      if (!eventData.time) {
+        throw new Error('Please select a valid start time.');
+      }
+
       try {
-        // eventData.time comes from <input type="time"> → always "HH:mm" (24-hour).
-        // Combine with date to form a valid local datetime string.
-        const startDateTime = new Date(`${eventData.date}T${eventData.time}`);
-
-        if (isNaN(startDateTime.getTime())) {
-          throw new Error(
-            'Invalid date or time value. Please pick a date and select a time.',
-          );
-        }
-
-        const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
-
-        const createInput = {
+        await createEventMutation.mutateAsync({
           title: eventData.title,
           description: eventData.description,
           date: eventData.date,
-          startsAt: startDateTime.toISOString(),
-          endsAt: endDateTime.toISOString(),
-          location: eventData.location,
-          capacity: eventData.maxCapacity,
-          category: eventData.category,
+          startsAt: eventData.time,
+          endsAt: addTwoHours(eventData.time),
           logoUrl: eventData.imageUrl,
-        };
-
-        await createEventMutation.mutateAsync(createInput);
+          // The current creation modal collects a venue and capacity. Map
+          // these to the API's supported inline hall object rather than the
+          // old, unsupported location/capacity event fields.
+          ...(eventData.hallId
+            ? { hallId: eventData.hallId }
+            : eventData.location.trim() && {
+                hall: {
+                  name: eventData.location.trim(),
+                  address: eventData.location.trim(),
+                  capacity: Math.max(1, Math.round(eventData.maxCapacity || 1)),
+                },
+              }),
+        });
       } catch (err) {
         console.error('Failed to create event:', err);
         throw err;

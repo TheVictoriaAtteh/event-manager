@@ -80,7 +80,8 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
 
     // Check if JSON payload
     try {
-      const parsed = JSON.parse(trimmed) as { passId?: string; id?: string };
+      const parsed = JSON.parse(trimmed) as { qrToken?: string; passId?: string; id?: string };
+      if (parsed.qrToken) return parsed.qrToken;
       if (parsed.passId) return parsed.passId;
       if (parsed.id) return parsed.id;
     } catch {
@@ -284,7 +285,7 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                   {loadingEvent ? "Loading event..." : currentEvent?.title || "No event selected"}
                 </h2>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
-                  {currentEvent ? `${currentEvent.date} · ${currentEvent.location}` : "Select an event from your dashboard first."}
+                  {currentEvent ? `${currentEvent.date} · ${currentEvent.hall?.address || currentEvent.hall?.name || "Venue to be confirmed"}` : "Select an event from your dashboard first."}
                 </p>
               </div>
 
@@ -396,7 +397,7 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                             Check-In Granted
                           </span>
                           <h3 className="text-xl font-extrabold text-[var(--text-primary)]">
-                            {scanResult.checkIn.attendee.name}
+                            {scanResult.attendee.name}
                           </h3>
                         </div>
                       </div>
@@ -404,22 +405,20 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                       <div className="space-y-2.5 pt-3 border-t border-emerald-500/20 text-xs">
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Email:</span>
-                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.checkIn.attendee.email}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--text-secondary)]">Pass Type:</span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
-                            {scanResult.checkIn.attendee.passType}
-                          </span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.attendee.email}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Event:</span>
-                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.checkIn.event.title}</span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.event.title}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--text-secondary)]">Venue:</span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.hall?.name ?? "Not assigned"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Scanned Time:</span>
                           <span className="font-mono text-[var(--text-primary)]">
-                            {new Date(scanResult.checkIn.scannedAt).toLocaleTimeString()}
+                            {new Date(scanResult.scannedAt).toLocaleTimeString()}
                           </span>
                         </div>
                       </div>

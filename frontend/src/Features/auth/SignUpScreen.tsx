@@ -17,7 +17,8 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 }) => {
   const { signUp } = useAuth();
 
-  const [role, setRole] = useState<UserRole>("ATTENDEE");
+  // The supplied backend currently validates ADMIN as its only user role.
+  const role: UserRole = "ADMIN";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -145,59 +146,8 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
           "
         >
 
-          {/* ROLE SWITCHER */}
-          <div
-            className="
-              grid grid-cols-2
-              gap-1.5
-              p-1.5
-              mb-7
-              bg-[var(--bg-input)]
-              rounded-xl
-              border border-[var(--border-default)]
-            "
-          >
-
-            <button
-              type="button"
-              onClick={() => setRole("ATTENDEE")}
-              className={`
-                py-2.5
-                text-xs
-                font-semibold
-                rounded-lg
-                transition-all
-                cursor-pointer
-                ${
-                  role === "ATTENDEE"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
-                }
-              `}
-            >
-              Attendee
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setRole("ADMIN")}
-              className={`
-                py-2.5
-                text-xs
-                font-semibold
-                rounded-lg
-                transition-all
-                cursor-pointer
-                ${
-                  role === "ADMIN"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
-                }
-              `}
-            >
-              Admin
-            </button>
-
+          <div className="mb-7 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-[var(--text-secondary)]">
+            Create an administrator account to organize events, manage venues, and check in attendees.
           </div>
 
           {/* FORM */}
@@ -318,11 +268,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={
-                  role === "ADMIN"
-                    ? "admin@gatepass.com"
-                    : "attendee@example.com"
-                }
+                placeholder="admin@gatepass.com"
                 className="
                   w-full
                   px-4 py-3
@@ -433,7 +379,7 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
               )}
               {signUpMutation.isPending
                 ? "Creating account…"
-                : `Create ${role === "ADMIN" ? "Admin" : "Attendee"} Account`}
+                : "Create Administrator Account"}
             </button>
 
           </form>

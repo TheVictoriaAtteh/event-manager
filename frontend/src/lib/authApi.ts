@@ -17,7 +17,8 @@ export interface RegisterInput {
   name: string;
   email: string;
   password: string;
-  role?: UserRole;
+  /** The current backend accepts the ADMIN role only. */
+  role: UserRole;
 }
 
 export interface RegisterResult {

@@ -13,7 +13,7 @@ export interface SignUpInput {
   name: string;
   email: string;
   password: string;
-  role?: UserRole;
+  role: UserRole;
 }
 
 export interface SignUpResult {
