@@ -1,96 +1,60 @@
-# React + TypeScript + Vite
+# Event Manager Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository contains **only the Event Manager web frontend**. The NestJS
+backend lives in a separate repository and is not included, built, or started
+from this project.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS
+- TanStack React Query
 
-## React Compiler
+## Configure the external API
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
----
-
-## Event Manager Backend (NestJS)
-
-The backend lives in [`backend/`](./backend/README.md): NestJS 11 + Prisma 7 + PostgreSQL + Supabase Auth.
-
-Quick start:
+The frontend requires the URL of the separately deployed API at build time.
 
 ```bash
-cd backend
-cp .env.example .env   # fill in DATABASE_URL + Supabase keys
-npm install
-npm run prisma:generate
-npm run prisma:migrate   # requires a running PostgreSQL
-npm run start:dev        # API on http://localhost:4000, Swagger at /api/docs
+cp frontend/.env.example frontend/.env
 ```
 
-See [backend/README.md](./backend/README.md) for the full guide and
-[backend/AUTH_INTEGRATION.md](./backend/AUTH_INTEGRATION.md) for wiring the
-frontend auth screens to the API.
+Set the value to your backend's public base URL (without a trailing slash):
+
+```dotenv
+VITE_API_URL=https://api.your-domain.com
+```
+
+The API must allow this frontend's origin through CORS. Never put backend
+secrets in `VITE_*` variables: all Vite variables are visible in the browser.
+
+### Connected API contract
+
+The frontend is wired for the provided `event-manager-backend` contract:
+
+- registration creates an `ADMIN` account (the backend currently has no attendee user role);
+- events use `date` plus `startsAt`/`endsAt` time strings and a `hall`/`hallId` for venue data;
+- attendees accept only `name` and `email`, and imported CSV files use `Name,Email`;
+- check-in is `POST /check-in` with `{ "qrToken": "…" }`.
+
+The backend does not currently publish a standalone check-in-history endpoint, so
+this frontend derives the log from attendee check-in statuses returned by its
+supported attendee endpoint.
+
+## Run locally
+
+```bash
+npm ci --prefix frontend
+npm run dev
+```
+
+The app runs on `http://localhost:3000`.
+
+## Production build and checks
+
+```bash
+npm run build
+npm run lint
+```
+
+The actual frontend source and its package manifest are in [`frontend/`](./frontend).

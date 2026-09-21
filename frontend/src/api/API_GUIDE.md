@@ -1,114 +1,76 @@
-# API Usage Guide
+# External API usage guide
 
-## Events API (`eventsApi`)
+This frontend targets the separately deployed `event-manager-backend` API. Set an absolute `VITE_API_URL` in `frontend/.env`; do not put any API or Supabase secrets in the frontend.
 
-Manages event creation, updates, and retrieval.
+## Events
 
-**Available Methods:**
-- `list()` - Get all events with organizer, hall, and attendee count
-- `get(id)` - Get a single event by ID
-- `create(input)` - Create a new event
-- `update(id, input)` - Update an existing event
-- `remove(id)` - Delete an event
-- `assignHall(id, input)` - Assign or update the hall for an event
+`eventsApi` calls authenticated `/events` routes. The current API stores the calendar date separately from times, so send `date` as `YYYY-MM-DD` and `startsAt` / `endsAt` as time strings such as `10:00` and `18:00`.
 
-**Example:**
-
-```typescript
+```ts
 import { eventsApi } from '@/lib/eventsApi';
-import type { CreateEventInput } from '@/api/interfaces/events';
 
-// Create an event
-const newEvent: CreateEventInput = {
+const event = await eventsApi.create({
   title: 'Tech Summit 2026',
   description: 'Annual technology conference',
-  date: '2026-09-15',
-  startsAt: '2026-09-15T10:00:00Z',
-  endsAt: '2026-09-15T18:00:00Z',
-  location: 'Main Auditorium',
-  capacity: 300,
-};
-
-const event = await eventsApi.create(newEvent);
-const events = await eventsApi.list();
-await eventsApi.update(event.id, { capacity: 350 });
-await eventsApi.assignHall(event.id, { hallId: 'hall-uuid' });
-await eventsApi.remove(event.id);
-```
-
-## Halls API (`hallsApi`)
-
-Manages venue/hall information.
-
-**Example:**
-
-```typescript
-import { hallsApi } from '@/lib/hallsApi';
-
-const newHall = {
-  name: 'Grand Conference Hall',
-  address: '123 Main Street, City',
-  capacity: 500,
-};
-
-const hall = await hallsApi.create(newHall);
-const halls = await hallsApi.list();
-```
-
-## Attendees API (`attendeesApi`)
-
-Manages event attendees and CSV imports.
-
-**Example:**
-
-```typescript
-import { attendeesApi } from '@/lib/attendeesApi';
-
-const result = await attendeesApi.list('event-uuid', {
-  search: 'john',
-  take: 50,
+  date: '2026-10-25',
+  startsAt: '10:00',
+  endsAt: '18:00',
+  hall: {
+    name: 'Grand Conference Hall',
+    address: 'Central Area, Abuja',
+    capacity: 500,
+  },
 });
 
+await eventsApi.assignHall(event.id, { hallId: 'hall-uuid' });
+await eventsApi.update(event.id, { brandColor: '#1E40AF' });
+```
+
+Event requests must not send legacy `location`, `capacity`, or `category` fields. A venue is represented by an existing `hallId` or an inline `hall` object.
+
+## Halls
+
+`hallsApi` manages authenticated `/halls` routes.
+
+```ts
+const hall = await hallsApi.create({
+  name: 'Grand Conference Hall',
+  address: 'Central Area, Abuja',
+  capacity: 500,
+});
+```
+
+## Attendees and check-in
+
+The attendee API accepts only a name and email. It issues a pass automatically and intentionally does **not** expose the QR token in attendee responses.
+
+```ts
 await attendeesApi.create('event-uuid', {
   name: 'John Doe',
   email: 'john@example.com',
-  passType: 'VIP',
 });
 ```
 
-## Context Integration
+CSV files should include `Name,Email`. The current API does not support attendee pass types.
 
-### EventsContext
+Check an attendee in with the token contained in their QR code:
 
-```typescript
-import { useEvents } from '@/context/useEvents';
-
-function MyComponent() {
-  const { events, isLoading, error, addEvent, deleteEvent } = useEvents();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-      {events.map(event => (
-        <div key={event.id}>{event.title}</div>
-      ))}
-    </div>
-  );
-}
+```ts
+await checkInApi.scanPass(qrToken); // POST /check-in with { qrToken }
 ```
 
-## Error Handling
+There is no standalone check-in-history endpoint. The frontend's log is derived from each attendee's `checkIn.scannedAt` status returned by `/events/:eventId/attendees`.
 
-```typescript
+## Errors
+
+```ts
 import { ApiError } from '@/lib/apiClient';
 
 try {
-  await eventsApi.create(newEvent);
+  await eventsApi.create(input);
 } catch (error) {
   if (error instanceof ApiError) {
-    console.error(`API Error ${error.status}:`, error.message);
+    console.error(`API error ${error.status}:`, error.message);
   }
 }
 ```

@@ -2,7 +2,7 @@ export interface ApiResponse<T> {
   data: T;
   code: number;
   message: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 }
 
 export interface ResponseStructure<T> {

@@ -2,8 +2,11 @@
 
 import axios, { type AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
-export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:4000";
+// This frontend is deployed independently from the API. Configure the API
+// origin at build time, for example: VITE_API_URL=https://api.example.com.
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_URL as string | undefined
+)?.replace(/\/+$/, '') ?? '';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -30,6 +33,17 @@ export class ApiError extends Error {
   }
 }
 
+function requireApiBaseUrl(): string {
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      0,
+      'API_URL_NOT_CONFIGURED',
+      'The API URL is not configured. Set VITE_API_URL before building the frontend.',
+    );
+  }
+  return API_BASE_URL;
+}
+
 function axiosErrorToApiError(error: AxiosError<{ code?: string; message?: string | string[] }>): ApiError {
   const data = error.response?.data;
   const message = Array.isArray(data?.message)
@@ -40,6 +54,7 @@ function axiosErrorToApiError(error: AxiosError<{ code?: string; message?: strin
 
 /** All feature API modules should use this typed Axios boundary. */
 export async function apiRequest<T>(config: AxiosRequestConfig): Promise<T> {
+  requireApiBaseUrl();
   try {
     const response = await apiClient.request<T>(config);
     return response.data;
@@ -147,13 +162,12 @@ export async function apiFetch<T>(
   options: ApiFetchOptions = {},
 ): Promise<T> {
   const { method = "GET", body, formData, auth = true } = options;
+  const apiBaseUrl = requireApiBaseUrl();
 
   const doFetch = (): Promise<Response> => {
     const headers: Record<string, string> = {};
     if (auth) {
       const tokens = getTokens();
-       console.log("ACCESS TOKEN BEING SENT:", tokens?.accessToken);
-
       if (tokens?.accessToken) {
         headers.Authorization = `Bearer ${tokens.accessToken}`;
       }
@@ -166,7 +180,7 @@ export async function apiFetch<T>(
       headers["Content-Type"] = "application/json";
       payload = JSON.stringify(body);
     }
-    return fetch(`${API_BASE_URL}${path}`, {
+    return fetch(`${apiBaseUrl}${path}`, {
       method,
       headers,
       body: payload,
@@ -208,12 +222,13 @@ interface RefreshResponse {
 }
 
 export async function refreshTokens(): Promise<StoredTokens> {
+  const apiBaseUrl = requireApiBaseUrl();
   const current = getTokens();
   if (!current?.refreshToken) {
     throw new ApiError(401, "INVALID_REFRESH_TOKEN", "No refresh token");
   }
 
-  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+  const res = await fetch(`${apiBaseUrl}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken: current.refreshToken }),

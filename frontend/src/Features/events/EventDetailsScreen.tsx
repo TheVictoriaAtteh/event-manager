@@ -1,502 +1,92 @@
-import React, { useState } from "react";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  Search,
-  Mail,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
-
-interface Attendee {
-  id: string;
-  name: string;
-  email: string;
-  registeredAt: string;
-  status: "Confirmed" | "Checked In" | "Cancelled";
-}
-
-const MOCK_ATTENDEES: Attendee[] = [
-  {
-    id: "1",
-    name: "Alex Johnson",
-    email: "alex.j@example.com",
-    registeredAt: "Aug 10, 2026",
-    status: "Checked In",
-  },
-  {
-    id: "2",
-    name: "Sarah Williams",
-    email: "sarah.w@example.com",
-    registeredAt: "Aug 11, 2026",
-    status: "Confirmed",
-  },
-  {
-    id: "3",
-    name: "Michael Chen",
-    email: "m.chen@example.com",
-    registeredAt: "Aug 12, 2026",
-    status: "Confirmed",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    email: "emily.d@example.com",
-    registeredAt: "Aug 14, 2026",
-    status: "Cancelled",
-  },
-];
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertCircle, ArrowLeft, Calendar, Clock, Loader2, MapPin, Search, UserCheck, Users } from "lucide-react";
+import type { Event } from "../../api/interfaces/events";
+import { attendeesApi, type Attendee } from "../../lib/attendeesApi";
+import { eventsApi } from "../../lib/eventsApi";
+import { ApiError } from "../../lib/apiClient";
 
 interface EventDetailsScreenProps {
-  /** Selected event; consumed once this screen is wired to the API. */
-  eventId?: string;
+  eventId: string;
   onBack: () => void;
-  /** Opens the attendee management screen for this event. */
   onManageAttendees?: () => void;
 }
 
-export const EventDetailsScreen: React.FC<EventDetailsScreenProps> = ({
-  onBack,
-  onManageAttendees,
-}) => {
+function formatTime(time: string | null): string {
+  if (!time) return "Time to be confirmed";
+  const date = new Date(`1970-01-01T${time}`);
+  return Number.isNaN(date.getTime()) ? time : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+export const EventDetailsScreen: React.FC<EventDetailsScreenProps> = ({ eventId, onBack, onManageAttendees }) => {
+  const [event, setEvent] = useState<Event | null>(null);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [attendees, setAttendees] = useState<Attendee[]>(MOCK_ATTENDEES);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredAttendees = attendees.filter(
-    (a) =>
-      a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const load = useCallback(async () => {
+    if (!eventId) return;
+    setIsLoading(true);
+    setError("");
+    try {
+      const [eventResult, attendeesResult] = await Promise.all([
+        eventsApi.get(eventId),
+        attendeesApi.list(eventId, { take: 100 }),
+      ]);
+      setEvent(eventResult);
+      setAttendees(attendeesResult.data);
+      setTotal(attendeesResult.total);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not load this event.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [eventId]);
 
-  const toggleCheckIn = (id: string) => {
-    setAttendees((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const nextStatus =
-            item.status === "Checked In" ? "Confirmed" : "Checked In";
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
-          return {
-            ...item,
-            status: nextStatus,
-          };
-        }
+  const filteredAttendees = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return attendees;
+    return attendees.filter((attendee) => attendee.name.toLowerCase().includes(query) || attendee.email.toLowerCase().includes(query));
+  }, [attendees, searchTerm]);
 
-        return item;
-      })
-    );
-  };
+  const venue = event?.hall?.address || event?.hall?.name || "Venue to be confirmed";
 
   return (
     <div className="bg-dot-grid min-h-screen text-[var(--text-primary)] p-6">
       <div className="max-w-[1500px] mx-auto space-y-6">
-
-        {/* TOP HEADER */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="
-              inline-flex
-              items-center
-              gap-2
-              px-3
-              py-2
-              rounded-lg
-              text-xs
-              text-[var(--text-secondary)]
-              hover:text-[var(--text-accent)]
-              hover:bg-[var(--hover-surface)]
-              font-medium
-              transition-colors
-              cursor-pointer
-            "
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Events
-          </button>
-          {onManageAttendees && (
-            <button
-              onClick={onManageAttendees}
-              className="
-                inline-flex
-                items-center
-                gap-2
-                px-4
-                py-2
-                rounded-lg
-                bg-emerald-500
-                hover:bg-emerald-400
-                text-emerald-950
-                text-xs
-                font-semibold
-                transition-colors
-                cursor-pointer
-                shadow-lg
-                shadow-emerald-500/10
-              "
-            >
-              <Users className="w-4 h-4" />
-              Manage Attendees
-            </button>
-          )}
+        <div className="flex items-center justify-between gap-3">
+          <button onClick={onBack} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:bg-[var(--hover-surface)] font-medium transition-colors cursor-pointer"><ArrowLeft className="w-4 h-4" /> Back to Events</button>
+          {onManageAttendees && event && <button onClick={onManageAttendees} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-xs font-semibold transition-colors cursor-pointer shadow-lg shadow-emerald-500/10"><Users className="w-4 h-4" /> Manage Attendees</button>}
         </div>
 
-        {/* EVENT HEADER BANNER */}
-        <div
-          className="
-            bg-[var(--bg-surface)]
-            border
-            border-[var(--border-default)]
-            rounded-2xl
-            p-6
-            shadow-sm
-            space-y-4
-          "
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <span
-                className="
-                  inline-flex
-                  px-2.5
-                  py-0.5
-                  bg-emerald-500/10
-                  border
-                  border-emerald-500/20
-                  text-[var(--text-accent)]
-                  text-[10px]
-                  font-semibold
-                  rounded-full
-                  uppercase
-                  tracking-wider
-                "
-              >
-                Conference
-              </span>
+        {isLoading && <div className="py-24 flex flex-col items-center text-[var(--text-secondary)]"><Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-3" />Loading event…</div>}
+        {!isLoading && error && <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 flex gap-3"><AlertCircle className="w-5 h-5 shrink-0" />{error}</div>}
 
-              <h1
-                className="
-                  text-2xl
-                  font-bold
-                  text-[var(--text-heading)]
-                  mt-2
-                "
-              >
-                Tech Innovators Summit 2026
-              </h1>
-
-              <p
-                className="
-                  text-xs
-                  text-[var(--text-secondary)]
-                  mt-1
-                  max-w-2xl
-                "
-              >
-                Join industry leaders discussing AI trends, modern Web
-                Development, and future software architecture.
-              </p>
+        {!isLoading && !error && event && <>
+          <section className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl overflow-hidden shadow-sm">
+            {event.logoUrl && <img src={event.logoUrl} alt="" className="h-56 w-full object-cover" />}
+            <div className="p-6 space-y-4">
+              <div><h1 className="text-2xl font-bold text-[var(--text-heading)]">{event.title}</h1><p className="text-sm text-[var(--text-secondary)] mt-2 max-w-3xl">{event.description}</p></div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--border-subtle)] text-sm">
+                <div className="flex items-center gap-2.5 text-[var(--text-secondary)]"><Calendar className="w-4 h-4 text-[var(--text-accent)]" />{event.date}</div>
+                <div className="flex items-center gap-2.5 text-[var(--text-secondary)]"><Clock className="w-4 h-4 text-[var(--text-accent)]" />{formatTime(event.startsAt)} – {formatTime(event.endsAt)}</div>
+                <div className="flex items-center gap-2.5 text-[var(--text-secondary)]"><MapPin className="w-4 h-4 text-[var(--text-accent)]" />{venue}</div>
+              </div>
+              {event.hall && <p className="text-xs text-[var(--text-muted)]">Venue capacity: {event.hall.capacity} · {event.hall.name}</p>}
             </div>
-          </div>
+          </section>
 
-          {/* EVENT INFORMATION */}
-          <div
-            className="
-              grid
-              grid-cols-1
-              sm:grid-cols-3
-              gap-4
-              pt-4
-              border-t
-              border-[var(--border-subtle)]
-              text-xs
-            "
-          >
-            <div className="flex items-center gap-2.5 text-[var(--text-secondary)]">
-              <Calendar className="w-4 h-4 text-[var(--text-accent)]" />
-              <span>Aug 24, 2026</span>
+          <section className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+              <div className="flex items-center gap-2"><Users className="w-5 h-5 text-[var(--text-accent)]" /><h2 className="text-base font-bold text-[var(--text-heading)]">Registered Attendees</h2><span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-[var(--text-accent)] text-xs font-semibold rounded-md">{total}</span></div>
+              <div className="relative w-full sm:w-64"><Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" /><input type="search" placeholder="Search name or email…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg text-xs text-[var(--text-primary)] focus:outline-none focus:border-emerald-500" /></div>
             </div>
-
-            <div className="flex items-center gap-2.5 text-[var(--text-secondary)]">
-              <Clock className="w-4 h-4 text-[var(--text-accent)]" />
-              <span>09:00 AM - 05:00 PM</span>
-            </div>
-
-            <div className="flex items-center gap-2.5 text-[var(--text-secondary)]">
-              <MapPin className="w-4 h-4 text-[var(--text-accent)]" />
-              <span>Main Auditorium, Tech Hub</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ATTENDEES SECTION */}
-        <div
-          className="
-            bg-[var(--bg-surface)]
-            border
-            border-[var(--border-default)]
-            rounded-2xl
-            p-6
-            shadow-sm
-            space-y-4
-          "
-        >
-          {/* SECTION HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-[var(--text-accent)]" />
-
-              <h2 className="text-base font-bold text-[var(--text-heading)]">
-                Registered Attendees
-              </h2>
-
-              <span
-                className="
-                  px-2
-                  py-0.5
-                  bg-emerald-500/10
-                  border
-                  border-emerald-500/20
-                  text-[var(--text-accent)]
-                  text-xs
-                  font-semibold
-                  rounded-md
-                "
-              >
-                {attendees.length}
-              </span>
-            </div>
-
-            {/* SEARCH */}
-            <div className="relative w-full sm:w-64">
-              <Search
-                className="
-                  w-3.5
-                  h-3.5
-                  absolute
-                  left-3
-                  top-1/2
-                  -translate-y-1/2
-                  text-[var(--text-muted)]
-                "
-              />
-
-              <input
-                type="text"
-                placeholder="Search attendee name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="
-                  w-full
-                  pl-8
-                  pr-3
-                  py-1.5
-                  bg-[var(--bg-input)]
-                  border
-                  border-[var(--border-default)]
-                  rounded-lg
-                  text-xs
-                  text-[var(--text-primary)]
-                  placeholder:text-[var(--text-muted)]
-                  focus:outline-none
-                  focus:border-emerald-500
-                  focus:ring-2
-                  focus:ring-emerald-500/10
-                  transition-all
-                "
-              />
-            </div>
-          </div>
-
-          {/* TABLE */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr
-                  className="
-                    border-b
-                    border-[var(--border-subtle)]
-                    text-[var(--text-secondary)]
-                  "
-                >
-                  <th className="py-3 px-3 font-semibold">
-                    Attendee
-                  </th>
-
-                  <th className="py-3 px-3 font-semibold">
-                    Registered Date
-                  </th>
-
-                  <th className="py-3 px-3 font-semibold">
-                    Status
-                  </th>
-
-                  <th className="py-3 px-3 font-semibold text-right">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody
-                className="
-                  divide-y
-                  divide-[var(--border-subtle)]
-                "
-              >
-                {filteredAttendees.map((a) => (
-                  <tr
-                    key={a.id}
-                    className="
-                      hover:bg-emerald-500/5
-                      transition-colors
-                    "
-                  >
-                    {/* ATTENDEE */}
-                    <td className="py-3 px-3">
-                      <p className="font-medium text-[var(--text-primary)]">
-                        {a.name}
-                      </p>
-
-                      <p
-                        className="
-                          text-[11px]
-                          text-[var(--text-secondary)]
-                          flex
-                          items-center
-                          gap-1
-                          mt-0.5
-                        "
-                      >
-                        <Mail className="w-3 h-3 text-[var(--text-muted)]" />
-                        {a.email}
-                      </p>
-                    </td>
-
-                    {/* REGISTERED DATE */}
-                    <td className="py-3 px-3 text-[var(--text-secondary)]">
-                      {a.registeredAt}
-                    </td>
-
-                    {/* STATUS */}
-                    <td className="py-3 px-3">
-                      <span
-                        className={`
-                          inline-flex
-                          items-center
-                          gap-1
-                          px-2
-                          py-0.5
-                          rounded-full
-                          text-[10px]
-                          font-semibold
-                          ${
-                            a.status === "Checked In"
-                              ? `
-                                bg-emerald-500/10
-                                text-emerald-600
-                                dark:text-emerald-400
-                                border
-                                border-emerald-500/30
-                              `
-                              : a.status === "Confirmed"
-                              ? `
-                                bg-blue-500/10
-                                text-blue-600
-                                dark:text-blue-400
-                                border
-                                border-blue-500/30
-                              `
-                              : `
-                                bg-red-500/10
-                                text-red-600
-                                dark:text-red-400
-                                border
-                                border-red-500/30
-                              `
-                          }
-                        `}
-                      >
-                        {a.status === "Checked In" && (
-                          <CheckCircle className="w-3 h-3" />
-                        )}
-
-                        {a.status === "Cancelled" && (
-                          <XCircle className="w-3 h-3" />
-                        )}
-
-                        {a.status}
-                      </span>
-                    </td>
-
-                    {/* ACTION */}
-                    <td className="py-3 px-3 text-right">
-                      {a.status !== "Cancelled" && (
-                        <button
-                          onClick={() => toggleCheckIn(a.id)}
-                          className="
-                            px-2.5
-                            py-1
-                            bg-[var(--bg-input)]
-                            hover:bg-emerald-500/10
-                            border
-                            border-[var(--border-default)]
-                            rounded-md
-                            text-[11px]
-                            text-[var(--text-accent)]
-                            font-medium
-                            transition-colors
-                            cursor-pointer
-                          "
-                        >
-                          {a.status === "Checked In"
-                            ? "Undo Check-In"
-                            : "Check In"}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* EMPTY STATE */}
-          {filteredAttendees.length === 0 && (
-            <div className="py-12 text-center">
-              <Users
-                className="
-                  w-8
-                  h-8
-                  text-[var(--text-muted)]
-                  mx-auto
-                  mb-3
-                "
-              />
-
-              <h3
-                className="
-                  text-sm
-                  font-semibold
-                  text-[var(--text-primary)]
-                "
-              >
-                No attendees found
-              </h3>
-
-              <p
-                className="
-                  text-xs
-                  text-[var(--text-muted)]
-                  mt-1
-                "
-              >
-                Try adjusting your search.
-              </p>
-            </div>
-          )}
-        </div>
+            {filteredAttendees.length ? <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b border-[var(--border-subtle)] text-xs text-[var(--text-secondary)]"><th className="p-3">Attendee</th><th className="p-3">Pass</th><th className="p-3">Registered</th><th className="p-3">Status</th></tr></thead><tbody>{filteredAttendees.map((attendee) => <tr key={attendee.id} className="border-b border-[var(--border-subtle)] last:border-0"><td className="p-3"><p className="font-medium">{attendee.name}</p><p className="text-xs text-[var(--text-secondary)]">{attendee.email}</p></td><td className="p-3">{attendee.pass ? "Issued" : "Pending"}</td><td className="p-3 text-xs text-[var(--text-secondary)]">{new Date(attendee.createdAt).toLocaleDateString()}</td><td className="p-3">{attendee.checkIn ? <span className="inline-flex items-center gap-1 text-emerald-500 text-xs font-semibold"><UserCheck className="w-3.5 h-3.5" />Checked in</span> : <span className="text-xs text-[var(--text-secondary)]">Registered</span>}</td></tr>)}</tbody></table></div> : <p className="py-10 text-center text-sm text-[var(--text-muted)]">No attendees match your search.</p>}
+          </section>
+        </>}
       </div>
     </div>
   );

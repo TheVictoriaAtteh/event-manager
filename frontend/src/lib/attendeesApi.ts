@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiClient";
 
+/** The API deliberately does not return a QR token from attendee management. */
 export interface AttendeePass {
   id: string;
   revokedAt: string | null;
@@ -10,12 +11,12 @@ export interface Attendee {
   eventId: string;
   name: string;
   email: string;
-  passType: string;
+  phone: string | null;
   createdAt: string;
   updatedAt: string;
-  /** Latest (most recently created) pass for this attendee. */
+  /** The latest pass, if one has been issued for this attendee. */
   pass: AttendeePass | null;
-  /** Set when the latest pass has been checked in. */
+  /** Set when the attendee's latest pass has been checked in. */
   checkIn: { scannedAt: string } | null;
 }
 
@@ -24,16 +25,15 @@ export interface AttendeeListResult {
   total: number;
 }
 
+/** POST /events/:eventId/attendees accepts only these two fields. */
 export interface CreateAttendeeInput {
   name: string;
   email: string;
-  passType?: string;
 }
 
 export interface UpdateAttendeeInput {
   name?: string;
   email?: string;
-  passType?: string;
 }
 
 export interface CsvImportResult {
@@ -46,7 +46,6 @@ export interface CsvImportResult {
 
 export interface ListAttendeesParams {
   search?: string;
-  passType?: string;
   take?: number;
   skip?: number;
 }
@@ -54,7 +53,6 @@ export interface ListAttendeesParams {
 function toQuery(params: ListAttendeesParams): string {
   const q = new URLSearchParams();
   if (params.search) q.set("search", params.search);
-  if (params.passType) q.set("passType", params.passType);
   if (params.take !== undefined) q.set("take", String(params.take));
   if (params.skip !== undefined) q.set("skip", String(params.skip));
   const s = q.toString();
@@ -77,8 +75,8 @@ export const attendeesApi = {
     return apiRequest<Attendee>({ url: `/attendees/${id}`, method: "PATCH", data: input });
   },
 
-  remove(id: string): Promise<{ success: true }> {
-    return apiRequest<{ success: true }>({ url: `/attendees/${id}`, method: "DELETE" });
+  remove(id: string): Promise<void> {
+    return apiRequest<void>({ url: `/attendees/${id}`, method: "DELETE" });
   },
 
   importCsv(eventId: string, file: File): Promise<CsvImportResult> {
@@ -88,6 +86,7 @@ export const attendeesApi = {
       url: `/events/${eventId}/attendees/import`,
       method: "POST",
       data: formData,
+      // Axios adds the multipart boundary for a FormData body.
       headers: { "Content-Type": "multipart/form-data" },
     });
   },

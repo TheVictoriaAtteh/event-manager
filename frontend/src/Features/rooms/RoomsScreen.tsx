@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Plus,
@@ -46,7 +46,7 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch halls from backend
-  const loadHalls = async () => {
+  const loadHalls = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -58,11 +58,11 @@ export const RoomsScreen: React.FC<RoomsScreenProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    void loadHalls();
-  }, []);
+    void Promise.resolve().then(loadHalls);
+  }, [loadHalls]);
 
   // Reset form
   const resetForm = () => {

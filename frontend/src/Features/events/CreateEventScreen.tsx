@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useEvents } from "../../context/useEvents";
 import { uploadImage } from "../../lib/uploadsApi";
+import { useHallsQuery } from "../../lib/apiQueries";
 
 interface CreateEventScreenProps {
   onBack: () => void;
@@ -18,13 +19,15 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   onSubmitSuccess,
 }) => {
   const { addEvent } = useEvents();
+  const hallsQuery = useHallsQuery();
+  const halls = hallsQuery.data ?? [];
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [venueChoice, setVenueChoice] = useState("new");
   const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("Conference");
   const [capacity, setCapacity] = useState("");
   const [banner, setBanner] = useState<File | null>(null);
 
@@ -63,9 +66,9 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
         description,
         date,
         time,
-        location,
-        category,
-        maxCapacity: capacity ? Number(capacity) : 100,
+        location: venueChoice === "new" ? location : "",
+        maxCapacity: capacity ? Number(capacity) : 1,
+        hallId: venueChoice === "new" ? undefined : venueChoice,
         imageUrl,
       });
 
@@ -357,147 +360,46 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             </div>
           </div>
 
-          {/* LOCATION + CATEGORY */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* LOCATION */}
-            <div>
-              <label
-                className="
-                  block
-                  text-xs
-                  font-semibold
-                  text-[var(--text-secondary)]
-                  mb-1.5
-                "
-              >
-                Location / Venue
-              </label>
+          {/* VENUE RELATION */}
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
+              Venue
+            </label>
+            <select
+              value={venueChoice}
+              onChange={(e) => setVenueChoice(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+            >
+              <option value="new">Create a new venue for this event</option>
+              {halls.map((hall) => (
+                <option key={hall.id} value={hall.id}>
+                  {hall.name}{hall.address ? ` — ${hall.address}` : ""}
+                </option>
+              ))}
+            </select>
+            {hallsQuery.isLoading && <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">Loading existing venues…</p>}
+            {hallsQuery.isError && <p className="mt-1.5 text-[11px] text-amber-500">Existing venues could not be loaded. You can still create a new one.</p>}
+          </div>
 
-              <div className="relative">
-                <MapPin
-                  className="
-                    w-4
-                    h-4
-                    absolute
-                    left-3.5
-                    top-1/2
-                    -translate-y-1/2
-                    text-[var(--text-muted)]
-                    pointer-events-none
-                  "
-                />
-
-                <input
-                  type="text"
-                  required
-                  placeholder="Main Auditorium, Tech Hub"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="
-                    w-full
-                    pl-10
-                    pr-3.5
-                    py-2.5
-                    bg-[var(--bg-input)]
-                    border
-                    border-[var(--border-default)]
-                    rounded-xl
-                    text-sm
-                    text-[var(--text-primary)]
-                    placeholder:text-[var(--text-muted)]
-                    focus:outline-none
-                    focus:border-emerald-500
-                    focus:ring-2
-                    focus:ring-emerald-500/10
-                    transition-all
-                  "
-                />
+          {venueChoice === "new" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Venue name or address</label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+                  <input type="text" required placeholder="Main Auditorium, Tech Hub" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full pl-10 pr-3.5 py-2.5 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Venue capacity</label>
+                <input type="number" min="1" required placeholder="e.g. 200" value={capacity} onChange={(e) => setCapacity(e.target.value)} className="w-full px-3.5 py-2.5 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all" />
               </div>
             </div>
-
-            {/* CATEGORY */}
-            <div>
-              <label
-                className="
-                  block
-                  text-xs
-                  font-semibold
-                  text-[var(--text-secondary)]
-                  mb-1.5
-                "
-              >
-                Category
-              </label>
-
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="
-                  w-full
-                  px-3.5
-                  py-2.5
-                  bg-[var(--bg-input)]
-                  border
-                  border-[var(--border-default)]
-                  rounded-xl
-                  text-sm
-                  text-[var(--text-primary)]
-                  focus:outline-none
-                  focus:border-emerald-500
-                  focus:ring-2
-                  focus:ring-emerald-500/10
-                  transition-all
-                "
-              >
-                <option value="Conference">Conference</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Hackathon">Hackathon</option>
-                <option value="Meetup">Meetup</option>
-                <option value="Webinar">Webinar</option>
-              </select>
-            </div>
-          </div>
-
-          {/* CAPACITY */}
-          <div>
-            <label
-              className="
-                block
-                text-xs
-                font-semibold
-                text-[var(--text-secondary)]
-                mb-1.5
-              "
-            >
-              Attendee Capacity
-            </label>
-
-            <input
-              type="number"
-              min="1"
-              required
-              placeholder="e.g. 200"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
-              className="
-                w-full
-                px-3.5
-                py-2.5
-                bg-[var(--bg-input)]
-                border
-                border-[var(--border-default)]
-                rounded-xl
-                text-sm
-                text-[var(--text-primary)]
-                placeholder:text-[var(--text-muted)]
-                focus:outline-none
-                focus:border-emerald-500
-                focus:ring-2
-                focus:ring-emerald-500/10
-                transition-all
-              "
-            />
-          </div>
+          ) : (
+            <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-[var(--text-secondary)]">
+              The event will use the selected venue. Manage venue details from Rooms.
+            </p>
+          )}
 
           {/* EVENT BANNER */}
           <div>
@@ -529,7 +431,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             >
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp"
+                accept="image/png,image/jpeg,image/gif,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -583,7 +485,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                       mt-1
                     "
                   >
-                    SVG, PNG, JPG, GIF or WEBP (max 5 MB)
+                    PNG, JPG, GIF or WEBP (max 5 MB)
                   </p>
                 </div>
               )}

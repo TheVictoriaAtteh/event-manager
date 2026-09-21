@@ -39,13 +39,14 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 function DashboardRoute() {
   const navigate = useNavigate(); const { user, logout } = useAuth();
-  return <EventsDashboard userRole={user?.role ?? "ATTENDEE"} onLogout={() => { logout(); navigate("/", { replace: true }); }} onCreateEvent={() => navigate("/app/events/new")} onSelectEvent={(id) => navigate(`/app/events/${id}`)} onNavigateToAttendees={() => navigate("/app/events")} onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app")} />;
+  return <EventsDashboard userRole={user?.role ?? "ADMIN"} onLogout={() => { logout(); navigate("/", { replace: true }); }} onCreateEvent={() => navigate("/app/events/new")} onSelectEvent={(id) => navigate(`/app/events/${id}`)} onNavigateToAttendees={() => navigate("/app/events")} onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app")} />;
 }
 function EventDetailsRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); return <EventDetailsScreen eventId={eventId} onBack={() => navigate("/app")} onManageAttendees={() => navigate(`/app/events/${eventId}/attendees`)} />; }
 function AttendeesRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); return <AttendeesListScreen eventId={eventId} onBack={() => navigate("/app")} onAddAttendee={() => navigate(`/app/events/${eventId}/attendees/add`)} onUploadAttendees={() => navigate(`/app/events/${eventId}/attendees/upload`)} />; }
 function AddAttendeeRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); const parentPath = `/app/events/${eventId}/attendees`; return <><AttendeesRoute /><RouteModal label="Add attendee" onClose={() => navigate(parentPath)}><AddAttendeeScreen eventId={eventId} onBack={() => navigate(parentPath)} onDone={() => navigate(parentPath)} /></RouteModal></>; }
 function UploadAttendeesRoute() { const { eventId = "" } = useParams(); const navigate = useNavigate(); const parentPath = `/app/events/${eventId}/attendees`; return <><AttendeesRoute /><RouteModal label="Upload attendees" onClose={() => navigate(parentPath)}><UploadAttendeesScreen eventId={eventId} onBack={() => navigate(parentPath)} onDone={() => navigate(parentPath)} /></RouteModal></>; }
 function CheckInLogRoute() { const navigate = useNavigate(); return <><DashboardRoute /><RouteModal label="Check-in log" onClose={() => navigate("/app")}><CheckInLogScreen onBack={() => navigate("/app")} /></RouteModal></>; }
+function BoothsRoute() { const navigate = useNavigate(); return <><DashboardRoute /><RouteModal label="Teams and booths" onClose={() => navigate("/app")}><BoothsScreen onBack={() => navigate("/app")} /></RouteModal></>; }
 function SettingsRoute() { const navigate = useNavigate(); const { logout } = useAuth(); const { section = "settings" } = useParams(); return <SettingsScreen initialSection={settingsSections[section] ?? "profile"} onBack={() => navigate("/app")} onLogout={() => { logout(); navigate("/", { replace: true }); }} />; }
 
 function AppRoutes() {
@@ -60,7 +61,7 @@ function AppRoutes() {
     <Route path="events/:eventId/attendees/upload" element={<AdminRoute><UploadAttendeesRoute /></AdminRoute>} />
     <Route path="rooms" element={<AdminRoute><RoomsScreen onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app/rooms")} onAddRoom={() => navigate("/app/rooms/new")} /></AdminRoute>} />
     <Route path="rooms/new" element={<AdminRoute><><RoomsScreen onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app/rooms")} onAddRoom={() => navigate("/app/rooms/new")} /><AddRoomModal onClose={() => navigate("/app/rooms")} /></></AdminRoute>} />
-    <Route path="booths" element={<AdminRoute><BoothsScreen onBack={() => navigate("/app")} /></AdminRoute>} />
+    <Route path="booths" element={<AdminRoute><BoothsRoute /></AdminRoute>} />
     <Route path="check-in" element={<CheckInScreen onBack={() => navigate("/app")} />} />
     <Route path="check-in/log" element={<AdminRoute><CheckInLogRoute /></AdminRoute>} />
     <Route path="settings/:section?" element={<SettingsRoute />} />

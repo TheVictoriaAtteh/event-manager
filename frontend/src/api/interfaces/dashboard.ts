@@ -1,10 +1,14 @@
+export interface DashboardPeriod {
+  start: string;
+  end: string;
+}
 
-export interface AdminDashboardApiResponse{
-  
+export interface AdminDashboardApiResponse {
+  data: AdminDashboardData;
 }
 
 export interface EmployeeDashboardData {
-  period: { start: string; end: string } | any;
+  period: DashboardPeriod;
   totalHours: number;
   dailyTrend: {
     date: string;
@@ -39,7 +43,7 @@ export interface MonthlyTrendItem {
 }
 
 export interface AdminDashboardData {
-  period: { start: string; end: string } | any;
+  period: DashboardPeriod;
   projectCounts: ProjectCounts;
   totalEmployees: number;
   totalHours: number;
@@ -48,5 +52,3 @@ export interface AdminDashboardData {
   monthlyTrend: MonthlyTrendItem[];
   avgHoursPerProject: number;
 }
-
-

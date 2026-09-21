@@ -1,4 +1,5 @@
-export type UserRole = 'ADMIN' | 'ATTENDEE';
+/** The currently connected backend exposes administrator accounts only. */
+export type UserRole = 'ADMIN';
 
 export interface User {
   id: string;

@@ -14,6 +14,7 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import { checkInApi, type ScanResult } from "../../lib/checkInApi";
+import { ApiError } from "../../lib/apiClient";
 import { eventsApi } from "../../lib/eventsApi";
 import type { Event } from "../../api/interfaces/events";
 
@@ -79,7 +80,8 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
 
     // Check if JSON payload
     try {
-      const parsed = JSON.parse(trimmed) as { passId?: string; id?: string };
+      const parsed = JSON.parse(trimmed) as { qrToken?: string; passId?: string; id?: string };
+      if (parsed.qrToken) return parsed.qrToken;
       if (parsed.passId) return parsed.passId;
       if (parsed.id) return parsed.id;
     } catch {
@@ -119,9 +121,13 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
     try {
       const result = await checkInApi.scanPass(passId);
       setScanResult(result);
-    } catch (err:any) {
+    } catch (err: unknown) {
       console.error("Check-in scan error:", err);
-      setScanError(err?.message || "Check-in failed. Invalid or expired pass.");
+      setScanError(
+        err instanceof ApiError || err instanceof Error
+          ? err.message
+          : "Check-in failed. Invalid or expired pass.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -276,10 +282,10 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                   Active Event
                 </p>
                 <h2 className="text-xl font-bold text-[var(--text-primary)]">
-                  {loadingEvent ? "Loading event..." : currentEvent?.title || "Tech Innovators Summit 2026"}
+                  {loadingEvent ? "Loading event..." : currentEvent?.title || "No event selected"}
                 </h2>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
-                  {currentEvent ? `${currentEvent.date} · ${currentEvent.location}` : "Aug 24, 2026 · Main Venue"}
+                  {currentEvent ? `${currentEvent.date} · ${currentEvent.hall?.address || currentEvent.hall?.name || "Venue to be confirmed"}` : "Select an event from your dashboard first."}
                 </p>
               </div>
 
@@ -339,12 +345,12 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                 {/* MANUAL PASS ID FALLBACK */}
                 <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
                   <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
-                    Or Enter Pass ID Manually
+                    Or Enter QR Token Manually
                   </p>
                   <form onSubmit={handleManualSubmit} className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Paste or type Pass UUID..."
+                      placeholder="Paste or type QR token..."
                       value={manualPassId}
                       onChange={(e) => setManualPassId(e.target.value)}
                       className="flex-1 px-3.5 py-2.5 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500 font-mono text-xs"
@@ -391,7 +397,7 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                             Check-In Granted
                           </span>
                           <h3 className="text-xl font-extrabold text-[var(--text-primary)]">
-                            {scanResult.checkIn.attendee.name}
+                            {scanResult.attendee.name}
                           </h3>
                         </div>
                       </div>
@@ -399,22 +405,20 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                       <div className="space-y-2.5 pt-3 border-t border-emerald-500/20 text-xs">
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Email:</span>
-                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.checkIn.attendee.email}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--text-secondary)]">Pass Type:</span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
-                            {scanResult.checkIn.attendee.passType}
-                          </span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.attendee.email}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Event:</span>
-                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.checkIn.event.title}</span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.event.title}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--text-secondary)]">Venue:</span>
+                          <span className="font-semibold text-[var(--text-primary)]">{scanResult.hall?.name ?? "Not assigned"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[var(--text-secondary)]">Scanned Time:</span>
                           <span className="font-mono text-[var(--text-primary)]">
-                            {new Date(scanResult.checkIn.scannedAt).toLocaleTimeString()}
+                            {new Date(scanResult.scannedAt).toLocaleTimeString()}
                           </span>
                         </div>
                       </div>
@@ -478,17 +482,17 @@ const CheckInScreen: React.FC<CheckInScreenProps> = ({ eventId, onBack }) => {
                   Pass QR Code Display
                 </h2>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
-                  Enter an attendee's Pass UUID to render their scannable QR code.
+                  Enter an attendee's QR token to render their scannable QR code.
                 </p>
               </div>
 
               <div className="mb-6">
                 <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
-                  Pass UUID
+                  QR Token
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000"
+                  placeholder="Paste the attendee QR token"
                   value={passIdToDisplay}
                   onChange={(e) => setPassIdToDisplay(e.target.value.trim())}
                   className="w-full px-4 py-3 bg-[var(--bg-input)] border border-[var(--border-default)] rounded-xl text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:border-emerald-500"
