@@ -2,6 +2,12 @@
 process.env.DATABASE_URL =
   process.env.DATABASE_URL ??
   'postgresql://postgres:postgres@localhost:5432/event_manager?schema=public';
+process.env.SUPABASE_URL = process.env.SUPABASE_URL ?? 'https://example.supabase.co';
+process.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? 'test-anon-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'test-service-role-key';
+process.env.SUPABASE_JWT_SECRET =
+  process.env.SUPABASE_JWT_SECRET ?? 'test-jwt-secret';
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';

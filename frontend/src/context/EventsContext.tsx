@@ -33,9 +33,9 @@ function toEventItem(event: Event): EventItem {
     title: event.title,
     date: event.date,
     time: timeString,
-    location: event.location,
-    description: event.description,
-    category: 'Event', // Backend doesn't have category, using generic label
+          location: event.location,
+          description: event.description,
+          category: event.category ?? 'Event',
     attendeesCount: event._count?.attendees ?? 0,
     maxCapacity: event.capacity,
     imageUrl: event.logoUrl ?? undefined,
@@ -72,6 +72,7 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           endsAt: endDateTime.toISOString(),
           location: eventData.location,
           capacity: eventData.maxCapacity,
+          category: eventData.category,
           logoUrl: eventData.imageUrl,
         };
 

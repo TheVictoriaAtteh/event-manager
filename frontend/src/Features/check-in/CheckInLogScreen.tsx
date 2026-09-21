@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Search,
@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { checkInApi, type CheckInLogEntry } from "../../lib/checkInApi";
+import { ApiError } from "../../lib/apiClient";
 import { eventsApi } from "../../lib/eventsApi";
 import type { Event } from "../../api/interfaces/events";
 
@@ -30,7 +31,7 @@ const CheckInLogScreen: React.FC<CheckInLogScreenProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -54,17 +55,21 @@ const CheckInLogScreen: React.FC<CheckInLogScreenProps> = ({
       } else {
         setRecords([]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to load check-in log:", err);
-      setError(err?.message || "Failed to load check-in records");
+      setError(
+        err instanceof ApiError || err instanceof Error
+          ? err.message
+          : "Failed to load check-in records",
+      );
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
-    void loadData();
-  }, [eventId]);
+    void Promise.resolve().then(loadData);
+  }, [loadData]);
 
   const filteredRecords = useMemo(() => {
     const search = searchTerm.toLowerCase();

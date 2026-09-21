@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 
 export interface CheckInResult {
@@ -57,9 +57,11 @@ export class CheckInService {
    * Records a check-in by scanning an attendee's pass UUID.
    * Enforces pass validity, non-revocation, event authorization, and duplicate prevention.
    */
-  async scanPass(passId: string, scannedById: string): Promise<CheckInResult> {
+  async scanPass(passToken: string, scannedById: string): Promise<CheckInResult> {
     const pass = await this.prisma.pass.findUnique({
-      where: { id: passId },
+      // QR codes carry a revocable random token rather than the database ID.
+      // This lets us rotate a pass without exposing internal identifiers.
+      where: { qrToken: passToken },
       include: {
         attendee: {
           include: {
@@ -109,26 +111,43 @@ export class CheckInService {
       });
     }
 
-    const checkIn = await this.prisma.checkIn.create({
-      data: {
-        passId,
-        scannedById,
-      },
-      include: {
-        pass: {
-          include: {
-            attendee: {
-              include: {
-                event: true,
+    let checkIn;
+    try {
+      checkIn = await this.prisma.checkIn.create({
+        data: {
+          passId: pass.id,
+          scannedById,
+        },
+        include: {
+          pass: {
+            include: {
+              attendee: {
+                include: {
+                  event: true,
+                },
               },
             },
           },
+          scannedBy: {
+            select: { id: true, name: true, email: true },
+          },
         },
-        scannedBy: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    });
+      });
+    } catch (error) {
+      // The initial lookup and insert are intentionally separate. A second
+      // scanner can win this race; the unique DB constraint remains the final
+      // authority and is translated to the same useful conflict response.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException({
+          message: `Attendee "${pass.attendee.name}" has already checked in`,
+          code: 'ALREADY_CHECKED_IN',
+        });
+      }
+      throw error;
+    }
 
     return {
       success: true,

@@ -52,9 +52,11 @@ export const OAuthCallbackScreen: React.FC<OAuthCallbackScreenProps> = ({
         setTimeout(() => {
           onSuccess(result.user.role);
         }, 1500);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus("error");
-        setErrorMessage(err?.message || "Authentication failed. Please try again.");
+        setErrorMessage(
+          err instanceof Error ? err.message : "Authentication failed. Please try again.",
+        );
         setTimeout(() => {
           onError();
         }, 3000);

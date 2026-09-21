@@ -18,7 +18,6 @@ import AddAttendeeScreen from "./Features/events/AddAttendeeScreen";
 import UploadAttendeesScreen from "./Features/events/UploadAttendeesScreen";
 import { RoomsScreen } from "./Features/rooms/RoomsScreen";
 import { AddRoomModal } from "./Features/rooms/AddRoomModal";
-import BoothsScreen from "./Features/booths/BoothsScreen";
 import CheckInScreen from "./Features/check-in/CheckInScreen";
 import CheckInLogScreen from "./Features/check-in/CheckInLogScreen";
 import HelpScreen from "./Features/help/HelpScreen";
@@ -29,7 +28,7 @@ const settingsSections: Record<string, SettingsSectionId> = {
 };
 const screenPaths: Record<string, string> = {
   dashboard: "/app", "event-details": "/app/events", attendees: "/app/events", "add-attendee": "/app/events", "upload-attendees": "/app/events",
-  rooms: "/app/rooms", "add-room": "/app/rooms/new", booths: "/app/booths", "room-assignment": "/app/rooms", "check-in": "/app/check-in", "check-in-log": "/app/check-in/log",
+  rooms: "/app/rooms", "add-room": "/app/rooms/new", "room-assignment": "/app/rooms", "check-in": "/app/check-in", "check-in-log": "/app/check-in/log",
   settings: "/app/settings", "settings-profile": "/app/settings/profile", "settings-security": "/app/settings/security", "settings-notifications": "/app/settings/notifications", "settings-appearance": "/app/settings/appearance", help: "/app/help",
 };
 
@@ -60,7 +59,6 @@ function AppRoutes() {
     <Route path="events/:eventId/attendees/upload" element={<AdminRoute><UploadAttendeesRoute /></AdminRoute>} />
     <Route path="rooms" element={<AdminRoute><RoomsScreen onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app/rooms")} onAddRoom={() => navigate("/app/rooms/new")} /></AdminRoute>} />
     <Route path="rooms/new" element={<AdminRoute><><RoomsScreen onNavigate={(screen) => navigate(screenPaths[screen] ?? "/app/rooms")} onAddRoom={() => navigate("/app/rooms/new")} /><AddRoomModal onClose={() => navigate("/app/rooms")} /></></AdminRoute>} />
-    <Route path="booths" element={<AdminRoute><BoothsScreen onBack={() => navigate("/app")} /></AdminRoute>} />
     <Route path="check-in" element={<CheckInScreen onBack={() => navigate("/app")} />} />
     <Route path="check-in/log" element={<AdminRoute><CheckInLogRoute /></AdminRoute>} />
     <Route path="settings/:section?" element={<SettingsRoute />} />

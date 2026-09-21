@@ -1,15 +1,13 @@
 import 'dotenv/config';
-import { defineConfig, env } from '@prisma/config';
+import { defineConfig } from '@prisma/config';
 
 /**
  * Prisma 7 CLI configuration.
  *
- * - `schema`     : location of the Prisma schema.
- * - `datasource` : connection used by CLI commands such as
- *                  `prisma migrate dev` / `prisma migrate deploy`.
- *
- * The runtime application does NOT read this file — PrismaService builds the
- * client with the PrismaPg driver adapter using the same DATABASE_URL.
+ * `prisma generate` only reads the schema, but Prisma still evaluates this
+ * config. A local placeholder keeps generation and CI builds independent of
+ * database credentials. Runtime connections remain fail-fast in
+ * PrismaService, and migration commands should always receive DATABASE_URL.
  */
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -17,6 +15,8 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    url:
+      process.env.DATABASE_URL ??
+      'postgresql://postgres:postgres@localhost:5432/event_manager',
   },
 });

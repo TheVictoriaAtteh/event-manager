@@ -89,6 +89,7 @@ function createService() {
     findById: jest.fn().mockResolvedValue(LOCAL_USER),
     findBySupabaseUserId: jest.fn().mockResolvedValue(LOCAL_USER),
     findByEmail: jest.fn().mockResolvedValue(LOCAL_USER),
+    ensureOrganization: jest.fn().mockResolvedValue(undefined),
   };
 
   const config = new ConfigService({
@@ -190,7 +191,7 @@ describe('AuthService.register', () => {
     expect(result.expiresIn).toBe(3600);
     expect(usersService.createOrUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ supabaseUserId: 'supa-user-123' }),
-      UserRole.ADMIN,
+      UserRole.ATTENDEE,
     );
   });
 });

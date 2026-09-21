@@ -43,10 +43,10 @@ export interface CheckInLogEntry {
 
 export const checkInApi = {
   /**
-   * Scans an attendee passId (UUID) to record check-in.
+   * Scans an attendee's opaque QR token to record check-in.
    */
-  scanPass(passId: string): Promise<ScanResult> {
-    return apiFetch<ScanResult>(`/check-in/${passId}`, {
+  scanPass(passToken: string): Promise<ScanResult> {
+    return apiFetch<ScanResult>(`/check-in/${encodeURIComponent(passToken)}`, {
       method: "POST",
     });
   },

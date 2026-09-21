@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  Tent,
   ScanLine,
   ClipboardList,
   CircleHelp,
@@ -13,7 +12,6 @@ import {
   PanelLeftOpen,
   CalendarDays,
   CheckCircle2,
-  X,
   UserPlus,
   Loader2,
   AlertCircle,
@@ -40,34 +38,14 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
   onNavigate,
 }) => {
   const { events, isLoading, error } = useEvents();
-  const [showCodeModal, setShowCodeModal] = useState(false);
-  const [privateCode, setPrivateCode] = useState("");
-  const [codeSuccessMsg, setCodeSuccessMsg] = useState("");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isAdmin = userRole === "ADMIN";
-  const isAttendee = userRole === "ATTENDEE";
 
   // Computed stats from real event data
   const totalEvents = events.length;
   const upcomingEvents = events.filter((e) => e.status === "UPCOMING").length;
   const activeEvents = events.filter((e) => e.status === "ONGOING").length;
-
-  const handlePrivateCodeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (privateCode.trim()) {
-      setCodeSuccessMsg(
-        "Registration request submitted! Awaiting admin approval."
-      );
-
-      setTimeout(() => {
-        setPrivateCode("");
-        setCodeSuccessMsg("");
-        setShowCodeModal(false);
-      }, 2000);
-    }
-  };
 
   return (
     <div className="bg-dot-grid min-h-screen text-[var(--text-primary)] flex relative overflow-hidden">
@@ -285,43 +263,6 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
                   )}
                 </button>
 
-                {/* Teams / Booths */}
-                <button
-                  onClick={() => onNavigate("booths")}
-                  title={
-                    isSidebarCollapsed
-                      ? "Teams / Booths"
-                      : undefined
-                  }
-                  className={`
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-3.5
-                    py-3
-                    rounded-xl
-                    text-[var(--text-secondary)]
-                    font-medium
-                    hover:bg-[var(--hover-surface)]
-                    hover:text-[var(--text-primary)]
-                    transition-all
-                    text-sm
-                    ${isSidebarCollapsed ? "justify-center" : ""}
-                  `}
-                >
-                  <Tent
-                    size={20}
-                    strokeWidth={2}
-                    className="min-w-[1.25rem]"
-                  />
-
-                  {!isSidebarCollapsed && (
-                    <span className="whitespace-nowrap">
-                      Teams / Booths
-                    </span>
-                  )}
-                </button>
               </>
             )}
 
@@ -545,27 +486,6 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* ATTENDEE ACTION */}
-            {isAttendee && (
-              <button
-                onClick={() => setShowCodeModal(true)}
-                className="
-                  px-4
-                  py-2.5
-                  bg-[var(--bg-surface)]
-                  border border-[var(--border-default)]
-                  hover:bg-[var(--hover-surface)]
-                  text-[var(--text-accent)]
-                  rounded-xl
-                  font-semibold
-                  transition-all
-                  text-sm
-                "
-              >
-                Join with Private Code
-              </button>
-            )}
-
             {/* ADMIN ACTION */}
             {isAdmin && (
               <button
@@ -753,11 +673,6 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
                   <div className="mt-4 pt-4 border-t border-[var(--border-default)] flex justify-between items-center text-xs text-[var(--text-accent)] font-medium">
                     <span>View Details →</span>
 
-                    {isAttendee && (
-                      <span className="text-[var(--text-accent)] font-bold">
-                        Register
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -766,96 +681,6 @@ export const EventsDashboard: React.FC<EventsDashboardProps> = ({
         )}
       </main>
 
-      {/* ========================================================= */}
-      {/* PRIVATE EVENT REGISTRATION MODAL */}
-      {/* ========================================================= */}
-
-      {showCodeModal && (
-        <div className="fixed inset-0 bg-[var(--overlay)] backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
-            <button
-              onClick={() => setShowCodeModal(false)}
-              className="
-                absolute
-                top-4
-                right-4
-                text-[var(--text-secondary)]
-                hover:text-[var(--text-primary)]
-                transition-colors
-              "
-              aria-label="Close modal"
-            >
-              <X size={20} strokeWidth={2} />
-            </button>
-
-            <h3 className="text-xl font-bold text-[var(--text-heading)] mb-2">
-              Enter Private Event Code
-            </h3>
-
-            <p className="text-xs text-[var(--text-secondary)] mb-4">
-              Enter the unique access code provided by the event admin to
-              submit your registration request.
-            </p>
-
-            {codeSuccessMsg ? (
-              <div className="p-4 bg-[var(--badge-success-bg)] border border-emerald-500/40 text-[var(--badge-success-text)] rounded-xl text-sm font-medium">
-                {codeSuccessMsg}
-              </div>
-            ) : (
-              <form
-                onSubmit={handlePrivateCodeSubmit}
-                className="space-y-4"
-              >
-                <input
-                  type="text"
-                  required
-                  value={privateCode}
-                  onChange={(e) =>
-                    setPrivateCode(e.target.value.toUpperCase())
-                  }
-                  placeholder="e.g. GATE-2026"
-                  className="
-                    w-full
-                    px-4
-                    py-3
-                    bg-[var(--bg-input)]
-                    border border-[var(--border-default)]
-                    rounded-xl
-                    text-[var(--text-primary)]
-                    placeholder-[var(--text-muted)]
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-emerald-500
-                    text-sm
-                    tracking-wider
-                    uppercase
-                    font-mono
-                  "
-                />
-
-                <button
-                  type="submit"
-                  className="
-                    w-full
-                    py-3
-                    bg-emerald-500
-                    hover:bg-emerald-400
-                    text-emerald-950
-                    font-bold
-                    rounded-xl
-                    transition-all
-                    text-sm
-                    shadow-lg
-                    shadow-emerald-500/20
-                  "
-                >
-                  Submit Registration Request
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -62,6 +62,8 @@ model Event {
   id                        String       @id @default(uuid())
   description               String
   date                      String
+  location                  String
+  capacity                  Int
   logoUrl                   String?
   brandColor                String?
   publicRegistrationEnabled Boolean      @default(false)
@@ -70,7 +72,7 @@ model Event {
   createdAt                 DateTime     @default(now())
   updatedAt                 DateTime     @updatedAt
   category                  String?
-  endsAt                    String?
+  endsAt                    String
   startsAt                  String
   title                     String
   attendees                 Attendee[]

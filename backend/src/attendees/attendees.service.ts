@@ -17,6 +17,8 @@ const DEFAULT_PASS_TYPE = 'General';
 
 export interface LatestPass {
   id: string;
+  /** Revocable opaque value encoded in the attendee's QR code. */
+  qrToken: string;
   revokedAt: Date | null;
 }
 
@@ -309,7 +311,12 @@ export class AttendeesService {
     passType: string;
     createdAt: Date;
     updatedAt: Date;
-    passes: { id: string; revokedAt: Date | null; checkIn: { scannedAt: Date } | null }[];
+    passes: {
+      id: string;
+      qrToken: string;
+      revokedAt: Date | null;
+      checkIn: { scannedAt: Date } | null;
+    }[];
   }): AttendeeWithRelations {
     const latestPass = attendee.passes[0] ?? null;
     return {
@@ -321,7 +328,11 @@ export class AttendeesService {
       createdAt: attendee.createdAt,
       updatedAt: attendee.updatedAt,
       pass: latestPass
-        ? { id: latestPass.id, revokedAt: latestPass.revokedAt }
+        ? {
+            id: latestPass.id,
+            qrToken: latestPass.qrToken,
+            revokedAt: latestPass.revokedAt,
+          }
         : null,
       checkIn: latestPass?.checkIn ?? null,
     };

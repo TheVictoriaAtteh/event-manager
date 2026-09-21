@@ -1,133 +1,69 @@
-import { Injectable,NotFoundException} from '@nestjs/common';
-
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import PDFDocument from 'pdfkit';
-import { PrismaService } from '../database/prisma.service';
-
 import * as QRCode from 'qrcode';
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class PassPdfService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async generatePassPdf(
-    passId: string,
-  ): Promise<Buffer> {
-    // Find the pass and all information needed
+  async generatePassPdf(passId: string, userId: string): Promise<Buffer> {
     const pass = await this.prisma.pass.findUnique({
-      where: {
-        id: passId,
-      },
-
+      where: { id: passId },
       include: {
         attendee: {
           include: {
-            event: {
-              include: {
-                hall: true,
-          },         
-           },
-     },      },
-},
+            event: { include: { hall: true } },
+          },
+        },
+      },
     });
 
     if (!pass) {
-      throw new NotFoundException(
-        'Pass not found',
-      );
+      throw new NotFoundException('Pass not found');
+    }
+    if (pass.attendee.event.organizerId !== userId) {
+      throw new ForbiddenException('You do not have access to this pass');
     }
 
-    const attendee = pass.attendee;
-    const event = attendee.event;
-    const hall = event.hall;
-
-    if (!hall) {
-      throw new NotFoundException(
-        'No hall assigned to this event',
-      );
-    }
-
-    // Recreate the EXACT information
-    // that belongs inside the QR code.
-    const qrData = {
-      qrToken: pass.qrToken,
-
-      attendee: {
-        id: attendee.id,
-        name: attendee.name,
-        email: attendee.email,
-        passType: attendee.passType,
-      },
-
-      event: {
-        id: event.id,
-        title: event.title,
-        date: event.date,
-        startsAt: event.startsAt,
-        endsAt: event.endsAt,
-
-        hall: {
-      id: hall.id,
-      name: hall.name,
-      address: hall.address,
-       capacity: hall.capacity,
-        },
-      },
-    };
-
-    // Generate the QR
-    const qrDataUrl = await QRCode.toDataURL(
-      JSON.stringify(qrData),
-      {
-        errorCorrectionLevel: 'H',
-        margin: 2,
-        width: 1000,
-      },
-    );
-
-    // Convert QR data URL into image buffer
+    const qrDataUrl = await QRCode.toDataURL(pass.qrToken, {
+      errorCorrectionLevel: 'H',
+      margin: 2,
+      width: 1000,
+    });
     const qrImage = Buffer.from(
-      qrDataUrl.replace(
-        /^data:image\/png;base64,/,
-        '',
-      ),
+      qrDataUrl.replace(/^data:image\/png;base64,/, ''),
       'base64',
     );
 
-    // Create PDF
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 0,
-    });
-
+    const doc = new PDFDocument({ size: 'A4', margin: 48 });
     const chunks: Buffer[] = [];
-
-    doc.on('data', (chunk) => {
-      chunks.push(chunk);
-    });
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
 
     return new Promise((resolve, reject) => {
-      doc.on('end', () => {
-        resolve(Buffer.concat(chunks));
-      });
-
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Center the QR code on the page
-      const qrSize = 450;
-
-      const x =
-        (doc.page.width - qrSize) / 2;
-
-      const y =
-        (doc.page.height - qrSize) / 2;
-
-      doc.image(qrImage, x, y, {
-        width: qrSize,
-        height: qrSize,
+      const { attendee, qrToken } = pass;
+      const { event } = attendee;
+      doc.fontSize(24).text(event.title, { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(13).text(`Event date: ${event.date}`, { align: 'center' });
+      doc.text(`Location: ${event.location}`, { align: 'center' });
+      doc.moveDown(1.5);
+      doc.fontSize(18).text(attendee.name, { align: 'center' });
+      doc.fontSize(12).text(`${attendee.passType} pass`, { align: 'center' });
+      doc.moveDown(1);
+      doc.image(qrImage, (doc.page.width - 260) / 2, doc.y, {
+        width: 260,
+        height: 260,
       });
-
+      doc.moveDown(21);
+      doc.fontSize(8).fillColor('#555555').text(qrToken, { align: 'center' });
       doc.end();
     });
   }

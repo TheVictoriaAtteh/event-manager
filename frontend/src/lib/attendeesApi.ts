@@ -2,6 +2,8 @@ import { apiRequest } from "./apiClient";
 
 export interface AttendeePass {
   id: string;
+  /** Opaque value encoded in the attendee QR code. */
+  qrToken: string;
   revokedAt: string | null;
 }
 

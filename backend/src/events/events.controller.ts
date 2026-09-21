@@ -1,37 +1,39 @@
-import { Controller, Body, Post, Get, Patch, Param, Delete } from '@nestjs/common';
-import { EventsService } from './events.service';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser, type RequestUser } from '../common/decorators/current-user.decorator';
+import { AssignHallDto } from './dto/assign-hall.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { AssignHallDto } from './dto/assign-hall.dto';
-import { CurrentUser, type RequestUser } from '../common/decorators/current-user.decorator';
+import { EventsService } from './events.service';
 
-
+@ApiTags('events')
+@ApiBearerAuth()
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: RequestUser) {
-    return this.eventsService.create(createEventDto, user.id);
+  create(@Body() dto: CreateEventDto, @CurrentUser() user: RequestUser) {
+    return this.eventsService.create(dto, user.id);
   }
 
   @Get()
-  findAll() {
-    return this.eventsService.findAll();
+  findAll(@CurrentUser() user: RequestUser) {
+    return this.eventsService.findAll(user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.eventsService.findOne(id, user.id);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateEventDto: UpdateEventDto,
+    @Body() dto: UpdateEventDto,
     @CurrentUser() user: RequestUser,
   ) {
-    return this.eventsService.update(id, updateEventDto, user.id);
+    return this.eventsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
@@ -40,11 +42,11 @@ export class EventsController {
   }
 
   @Patch(':id/hall')
-  assignHall(@Param('id') id: string, @Body() assignHallDto: AssignHallDto,
+  assignHall(
+    @Param('id') id: string,
+    @Body() dto: AssignHallDto,
+    @CurrentUser() user: RequestUser,
   ) {
-    return this.eventsService.assignHall(
-      id,
-      assignHallDto.hallId,
-    );
+    return this.eventsService.assignHall(id, dto.hallId, user.id);
   }
-}
+}

@@ -1,4 +1,12 @@
-import { IsString, IsDateString, IsOptional, IsInt } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
@@ -7,18 +15,29 @@ export class CreateEventDto {
   @IsString()
   description!: string;
 
+  /** Calendar day shown to users (YYYY-MM-DD). */
   @IsDateString()
   date!: string;
 
-  @IsString()
+  @IsDateString()
   startsAt!: string;
 
-  @IsOptional()
+  @IsDateString()
+  endsAt!: string;
+
   @IsString()
-  endsAt?: string
+  location!: string;
+
+  @IsInt()
+  @Min(1)
+  capacity!: number;
 
   @IsOptional()
   @IsString()
+  category?: string;
+
+  @IsOptional()
+  @IsUrl({ require_tld: false })
   logoUrl?: string;
 
   @IsOptional()
@@ -26,6 +45,6 @@ export class CreateEventDto {
   brandColor?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   hallId?: string;
 }

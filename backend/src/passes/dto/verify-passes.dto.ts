@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 export class VerifyPassDto {
-  @IsString()
-  @IsNotEmpty()
-  qrToken: string;
+  /** Internal pass ID returned to an event organizer. */
+  @IsUUID()
+  passId!: string;
 }

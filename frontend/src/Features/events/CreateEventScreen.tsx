@@ -529,7 +529,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
             >
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp"
+                accept="image/png,image/jpeg,image/gif,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -583,7 +583,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
                       mt-1
                     "
                   >
-                    SVG, PNG, JPG, GIF or WEBP (max 5 MB)
+                    PNG, JPG, GIF or WEBP (max 5 MB)
                   </p>
                 </div>
               )}

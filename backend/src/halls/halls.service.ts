@@ -38,13 +38,16 @@ export class HallsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, ownerId: string) {
     const hall = await this.prisma.hall.findUnique({
       where: { id },
     });
 
     if (!hall) {
       throw new NotFoundException('Hall not found');
+    }
+    if (hall.organizerId !== ownerId) {
+      throw new ForbiddenException('You are not authorized to access this hall');
     }
 
     return hall;

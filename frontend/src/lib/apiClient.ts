@@ -2,8 +2,10 @@
 
 import axios, { type AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
+// Use the same-origin proxy by default. Set VITE_API_URL to an absolute API
+// URL only for deployments where the host proxies /api to the backend.
 export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:4000";
+  (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -152,8 +154,6 @@ export async function apiFetch<T>(
     const headers: Record<string, string> = {};
     if (auth) {
       const tokens = getTokens();
-       console.log("ACCESS TOKEN BEING SENT:", tokens?.accessToken);
-
       if (tokens?.accessToken) {
         headers.Authorization = `Bearer ${tokens.accessToken}`;
       }

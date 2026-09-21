@@ -1,96 +1,60 @@
-# React + TypeScript + Vite
+# Event Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Event Manager is a full-stack application for creating events, managing rooms
+and attendees, issuing QR passes, and recording door check-ins.
 
-Currently, two official plugins are available:
+- **Frontend:** React, TypeScript, Vite, React Query
+- **API:** NestJS, Prisma, PostgreSQL, Supabase Auth and Storage
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Project layout
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```text
+frontend/   React application
+backend/    NestJS API and Prisma schema/migrations
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Local development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
----
-
-## Event Manager Backend (NestJS)
-
-The backend lives in [`backend/`](./backend/README.md): NestJS 11 + Prisma 7 + PostgreSQL + Supabase Auth.
-
-Quick start:
+### 1. Configure services
 
 ```bash
-cd backend
-cp .env.example .env   # fill in DATABASE_URL + Supabase keys
-npm install
-npm run prisma:generate
-npm run prisma:migrate   # requires a running PostgreSQL
-npm run start:dev        # API on http://localhost:4000, Swagger at /api/docs
+cp .env.example .env
+cp backend/.env.example backend/.env
 ```
 
-See [backend/README.md](./backend/README.md) for the full guide and
-[backend/AUTH_INTEGRATION.md](./backend/AUTH_INTEGRATION.md) for wiring the
-frontend auth screens to the API.
+Populate `backend/.env` with a PostgreSQL `DATABASE_URL` and your Supabase
+project settings. Create a public Supabase Storage bucket named `event-images`
+for event banners.
+
+### 2. Install dependencies and migrate
+
+```bash
+npm ci
+npm ci --prefix frontend
+npm ci --prefix backend
+npm run prisma:migrate --prefix backend
+```
+
+### 3. Run the API and frontend
+
+In separate terminals:
+
+```bash
+npm run dev:backend
+npm run dev:frontend
+```
+
+The frontend is available at `http://localhost:3000`; Vite proxies `/api` to
+the API at `http://localhost:4000`, so browser code does not call localhost
+directly. Swagger is available at `http://localhost:4000/api/docs`.
+
+## Checks
+
+```bash
+npm run build
+npm run lint
+npm test
+```
+
+`prisma generate` can run without a configured database. A real
+`DATABASE_URL` is still required to run the API or apply migrations.

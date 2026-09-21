@@ -9,7 +9,7 @@ NestJS REST API for the Event Manager application.
 | Database           | PostgreSQL                                          |
 | ORM                | **Prisma 7** (`prisma/schema.prisma` = source of truth) |
 | Auth credentials   | **Supabase Auth** (passwords, sessions, email verification, recovery) |
-| API tokens         | JWT issued by this backend (`Authorization: Bearer <token>`) |
+| API tokens         | Supabase access tokens (`Authorization: Bearer <token>`) |
 | Validation         | class-validator / class-transformer (global `ValidationPipe`: whitelist, forbidNonWhitelisted, transform) |
 | Docs               | Swagger/OpenAPI at `/api/docs`                      |
 | Tests              | Jest (unit) + Jest e2e (`test/`)                    |
@@ -29,9 +29,10 @@ This backend NEVER stores passwords or password hashes.
 - Controllers stay thin; business logic lives in services.
 - `JwtAuthGuard` is registered globally (`APP_GUARD`): every route requires a
   valid Bearer JWT unless decorated with `@Public()`.
-- After a successful Supabase credential check, the backend issues its own JWT
-  (single consistent token mechanism) and mirrors the user into PostgreSQL
-  keyed by `supabaseUserId` (unique).
+- After a successful Supabase credential check, the backend returns the
+  Supabase session tokens and mirrors the user into PostgreSQL keyed by
+  `supabaseUserId` (unique). Tokens are verified with the configured legacy
+  JWT secret or the project's JWKS endpoint.
 
 ## Getting started
 
@@ -50,8 +51,7 @@ npm run start:dev           # http://localhost:4000, Swagger at /api/docs
 | --------------------------- | ------------------------------------------------------------------ |
 | `PORT`                      | API port (default 4000)                                            |
 | `DATABASE_URL`              | PostgreSQL connection string (Prisma driver adapter + CLI)          |
-| `JWT_SECRET`                | Secret for JWTs issued by THIS backend — use a long random string |
-| `JWT_EXPIRES_IN`            | JWT lifetime, e.g. `1d`                                            |
+| `SUPABASE_JWT_SECRET`       | Legacy HS256 Supabase JWT secret. Omit only for a Supabase project using asymmetric JWTs/JWKS. |
 | `SUPABASE_URL`              | Supabase project URL                                               |
 | `SUPABASE_ANON_KEY`         | Supabase anon/public key                                           |
 | `SUPABASE_SERVICE_ROLE_KEY` | 🔒 **Server-side secret — backend only, never the frontend, never committed** |
@@ -62,7 +62,7 @@ npm run start:dev           # http://localhost:4000, Swagger at /api/docs
 | Method | Path                        | Auth   | Description                                        |
 | ------ | --------------------------- | ------ | -------------------------------------------------- |
 | POST   | `/auth/register`            | Public | Create Supabase user, Supabase sends verification email |
-| POST   | `/auth/login`               | Public | Verify credentials via Supabase; rejects unverified emails; returns JWT |
+| POST   | `/auth/login`               | Public | Verify credentials via Supabase; rejects unverified emails; returns the Supabase session |
 | POST   | `/auth/verify-email`        | Public | Complete verification using the email link credential (`code` or `tokenHash`/`token`) |
 | POST   | `/auth/resend-verification` | Public | Resend confirmation email (generic response)       |
 | POST   | `/auth/forgot-password`     | Public | Supabase sends the recovery email                  |
@@ -99,9 +99,9 @@ These cannot be configured from code:
   migration folders under `prisma/migrations/`).
 - `npm run prisma:migrate:deploy` → production deploys.
 - Note for restricted networks: if `binaries.prisma.sh` is unreachable,
-  `prisma generate` still works (schema validation is WASM-based) but
-  engine-dependent commands may need network access on an unrestricted
-  machine.
+  Prisma CLI commands, including `prisma generate`, may need to download a
+  platform engine. Run them from an environment that can reach
+  `binaries.prisma.sh`.
 
 ## Scripts
 

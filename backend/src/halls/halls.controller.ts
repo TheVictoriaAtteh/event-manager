@@ -25,8 +25,8 @@ export class HallsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.hallsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.hallsService.findOne(id, user.id);
   }
 
   @Patch(':id')

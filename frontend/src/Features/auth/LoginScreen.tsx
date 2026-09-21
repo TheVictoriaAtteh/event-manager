@@ -19,8 +19,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const { login } = useAuth();
 
-  // Visual only: the real role comes from the server after sign-in.
-  const [role, setRole] = useState<UserRole>("ATTENDEE");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -152,59 +150,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             shadow-xl
           "
         >
-          {/* ROLE SWITCHER */}
-          <div
-            className="
-              grid grid-cols-2
-              gap-1.5
-              p-1.5
-              mb-6
-              bg-[var(--bg-input)]
-              rounded-xl
-              border border-[var(--border-default)]
-            "
-          >
-            <button
-              type="button"
-              onClick={() => setRole("ATTENDEE")}
-              className={`
-                py-2.5
-                text-xs
-                font-semibold
-                rounded-lg
-                transition-all
-                cursor-pointer
-                ${
-                  role === "ATTENDEE"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
-                }
-              `}
-            >
-              Attendee
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setRole("ADMIN")}
-              className={`
-                py-2.5
-                text-xs
-                font-semibold
-                rounded-lg
-                transition-all
-                cursor-pointer
-                ${
-                  role === "ADMIN"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-surface)]"
-                }
-              `}
-            >
-              Admin
-            </button>
-          </div>
-
           {/* GOOGLE SIGN-IN BUTTON */}
           <button
             type="button"
@@ -294,11 +239,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={
-                  role === "ADMIN"
-                    ? "admin@gatepass.com"
-                    : "attendee@example.com"
-                }
+                placeholder="you@example.com"
                 className="
                   w-full
                   px-4 py-3
@@ -442,9 +383,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               ) : (
                 <LogIn className="w-4 h-4" />
               )}
-              {loginMutation.isPending
-                ? "Signing in…"
-                : `Sign In as ${role === "ADMIN" ? "Admin" : "Attendee"}`}
+              {loginMutation.isPending ? "Signing in…" : "Sign In"}
             </button>
           </form>
 

@@ -9,17 +9,17 @@ import { CheckInService } from './check-in.service';
 export class CheckInController {
   constructor(private readonly checkInService: CheckInService) {}
 
-  @Post('check-in/:passId')
-  @ApiOperation({ summary: 'Scan an attendee QR pass to record check-in' })
+  @Post('check-in/:passToken')
+  @ApiOperation({ summary: 'Scan an attendee QR pass token to record check-in' })
   @ApiResponse({ status: 201, description: 'Check-in recorded successfully' })
   @ApiResponse({ status: 400, description: 'Pass is revoked or invalid' })
   @ApiResponse({ status: 404, description: 'Pass not found' })
   @ApiResponse({ status: 409, description: 'Attendee has already checked in' })
   scanPass(
-    @Param('passId') passId: string,
+    @Param('passToken') passToken: string,
     @CurrentUser() user: RequestUser,
   ) {
-    return this.checkInService.scanPass(passId, user.id);
+    return this.checkInService.scanPass(passToken, user.id);
   }
 
   @Get('events/:eventId/check-ins')

@@ -10,6 +10,8 @@ import { EventsModule } from './events/events.module';
 import { HallsModule } from './halls/halls.module';
 import { AttendeesModule } from './attendees/attendees.module';
 import { CheckInModule } from './check-in/check-in.module';
+import { PassesModule } from './passes/passes.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 /**
  * Root module.
@@ -32,6 +34,8 @@ import { CheckInModule } from './check-in/check-in.module';
     HallsModule,
     AttendeesModule,
     CheckInModule,
+    PassesModule,
+    UploadsModule,
   ],
   providers: [
     {
